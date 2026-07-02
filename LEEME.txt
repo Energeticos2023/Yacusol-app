@@ -26,3 +26,6 @@ ARCHIVOS PRINCIPALES:
 
 IMPORTANTE:
 Esta versión NO usa carpeta assets.
+
+VERSIÓN: SUS316-v2-2026-07-02
+Nota: actualizar todos los archivos y forzar recarga del navegador.

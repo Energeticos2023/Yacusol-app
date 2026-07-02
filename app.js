@@ -1,3 +1,4 @@
+const BUILD_VERSION = 'SUS316-v2-2026-07-02';
 const WHATSAPP = "51942899919";
 
 const products = [
@@ -124,3 +125,4 @@ updateRecommendation();
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
 }
+console.log('YACUSOL build', BUILD_VERSION);
