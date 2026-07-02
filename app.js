@@ -40,7 +40,7 @@ function renderProducts(){
         <span class="badge">${p.personas}</span>
         <span class="badge">${p.id}</span>
         <span class="badge">Garantía 5 años</span>
-        <span class="badge">SUS 304</span>
+        <span class="badge">SUS 316</span>
       </div>
       <p class="desc">${p.desc}</p>
       <div class="card-actions">
