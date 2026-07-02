@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#073b82">
+  <meta name="description" content="Catálogo, cotizador rápido y contacto por WhatsApp para termas solares YACUSOL.">
+  <title>YACUSOL · Termas solares</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="phone-shell">
+    <section class="app">
+      <header class="brand-header">
+        <div class="brand-logo-wrap">
+          <img src="assets/logo-energeticos.jpg" alt="ENERGÉTICOS" class="brand-logo">
+        </div>
+        <div class="brand-title">
+          <h1>YACUSOL</h1>
+          <p>Termas solares · ENERGÉTICOS</p>
+        </div>
+      </header>
+
+      <section class="screen active" id="inicio">
+        <div class="hero-card">
+          <span class="pill">Precios a nivel nacional</span>
+          <h2>Agua caliente con energía solar</h2>
+          <p class="lead">Catálogo, cotizador rápido y contacto directo por WhatsApp para vender termas solares YACUSOL.</p>
+          <img src="assets/terma-hero.jpg" alt="Terma solar YACUSOL" class="hero-img">
+          <div class="hero-actions">
+            <button class="btn primary" data-nav="cotizar">Cotizar ya</button>
+            <button class="btn secondary" data-nav="modelos">Ver modelos</button>
+          </div>
+          <a class="btn whatsapp big" href="https://wa.me/51942899919?text=Hola%2C%20quiero%20cotizar%20una%20terma%20solar%20YACUSOL" target="_blank" rel="noopener">
+            WhatsApp 942 899 919
+          </a>
+        </div>
+
+        <div class="section-card">
+          <h3>Beneficios principales</h3>
+          <div class="benefits">
+            <div><strong>SUS 304</strong><span>Acero inoxidable</span></div>
+            <div><strong>5 años</strong><span>Garantía</span></div>
+            <div><strong>Nacional</strong><span>Entrega en agencia</span></div>
+            <div><strong>Soporte</strong><span>Respaldo técnico</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="modelos">
+        <div class="top-card compact">
+          <span class="pill">Catálogo YACUSOL</span>
+          <h2>Modelos y precios</h2>
+          <p class="lead">Precios válidos para despacho a nivel nacional. El flete es asumido por el cliente.</p>
+        </div>
+        <div id="modelsList" class="cards-list"></div>
+      </section>
+
+      <section class="screen" id="cotizar">
+        <div class="top-card compact">
+          <span class="pill">Cotizador rápido</span>
+          <h2>Recomendar una terma</h2>
+          <p class="lead">Complete los datos básicos y envíe la consulta por WhatsApp.</p>
+        </div>
+
+        <form class="quote-card" id="quoteForm">
+          <label>Nombre del cliente
+            <input type="text" id="qName" placeholder="Ejemplo: Juan Pérez">
+          </label>
+          <label>Ciudad / distrito
+            <input type="text" id="qCity" placeholder="Ejemplo: Huaraz - Independencia">
+          </label>
+          <label>Cantidad de personas
+            <select id="qPeople">
+              <option value="3">3 personas</option>
+              <option value="4">4 personas</option>
+              <option value="5">5 personas</option>
+              <option value="6">6 personas</option>
+              <option value="8">7 a 8 personas</option>
+              <option value="12">10 a 12 personas</option>
+            </select>
+          </label>
+          <label>Tipo de techo
+            <select id="qRoof">
+              <option>Azotea plana de concreto</option>
+              <option>Techo inclinado</option>
+              <option>Calamina</option>
+              <option>Techo liviano</option>
+              <option>Por verificar</option>
+            </select>
+          </label>
+          <label>¿Cuenta con tanque elevado?
+            <select id="qTank">
+              <option>Sí cuenta con tanque elevado</option>
+              <option>No cuenta con tanque elevado</option>
+              <option>Por verificar en visita técnica</option>
+            </select>
+          </label>
+          <div class="recommendation" id="recommendationBox">
+            <span>Modelo recomendado</span>
+            <strong>YACUSOL 120 L</strong>
+            <small>S/ 1,350 · 3 personas</small>
+          </div>
+          <button class="btn whatsapp big" type="submit">Enviar consulta por WhatsApp</button>
+          <p class="note">La recomendación es referencial. La venta debe validarse con ubicación, techo, tanque elevado, sombras y ruta de tubería.</p>
+        </form>
+      </section>
+
+      <section class="screen" id="accesorios">
+        <div class="top-card compact">
+          <span class="pill">Complementos</span>
+          <h2>Accesorios y función</h2>
+          <p class="lead">Explique al cliente para qué sirve cada accesorio y cuándo recomendarlo.</p>
+        </div>
+        <div id="accessoriesList" class="cards-list"></div>
+      </section>
+
+      <section class="screen" id="panel">
+        <div class="top-card compact">
+          <span class="pill">Panel comercial</span>
+          <h2>YACUSOL · ENERGÉTICOS</h2>
+          <p class="lead">Herramientas rápidas para ventas y contacto.</p>
+        </div>
+
+        <div class="section-card">
+          <h3>Contactos WhatsApp</h3>
+          <div class="contact-grid">
+            <a href="https://wa.me/51961120481" target="_blank" rel="noopener">961 120 481</a>
+            <a href="https://wa.me/51983926721" target="_blank" rel="noopener">983 926 721</a>
+            <a href="https://wa.me/51942899919" target="_blank" rel="noopener">942 899 919</a>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3>Condiciones comerciales</h3>
+          <ul class="clean-list">
+            <li>Despacho a nivel nacional.</li>
+            <li>Entrega en agencia de transporte.</li>
+            <li>El flete es asumido por el cliente.</li>
+            <li>No incluye instalación ni traslado al domicilio.</li>
+            <li>Validar techo, tanque elevado, sombras y ruta de tubería.</li>
+          </ul>
+        </div>
+
+        <button class="btn primary big" id="installBtn" hidden>Instalar aplicación</button>
+        <a class="btn secondary big" href="https://energeticos2023.github.io/YACUSOL" target="_blank" rel="noopener">Abrir web YACUSOL</a>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Menú principal">
+        <button class="nav-item active" data-nav="inicio"><span>🏠</span>Inicio</button>
+        <button class="nav-item" data-nav="modelos"><span>☀️</span>Modelos</button>
+        <button class="nav-item" data-nav="cotizar"><span>🧾</span>Cotizar</button>
+        <button class="nav-item" data-nav="accesorios"><span>🛠️</span>Accesorios</button>
+        <button class="nav-item" data-nav="panel"><span>📊</span>Panel</button>
+      </nav>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

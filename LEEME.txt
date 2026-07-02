@@ -1,0 +1,35 @@
+YACUSOL - APP CLIENTE PWA
+
+Este paquete contiene una aplicación web instalable para clientes.
+No es AppSheet. Es una PWA visual, pensada para verse como una app moderna en celular.
+
+ARCHIVOS:
+- index.html
+- styles.css
+- app.js
+- manifest.json
+- service-worker.js
+- assets/
+
+CÓMO PROBAR:
+1. Descomprimir el ZIP.
+2. Abrir index.html en el navegador para revisar diseño.
+3. Para probar instalación como app, subir la carpeta a GitHub Pages o cualquier hosting HTTPS.
+
+CÓMO PUBLICAR EN GITHUB PAGES:
+1. Crear un repositorio, por ejemplo: YACUSOL-APP.
+2. Subir todos los archivos descomprimidos, no el ZIP.
+3. Ir a Settings > Pages.
+4. Seleccionar Branch: main / root.
+5. Guardar.
+6. Abrir el enlace generado en el celular.
+7. En Chrome: menú de tres puntos > Agregar a pantalla principal.
+
+CONTACTO WHATSAPP CONFIGURADO:
+942 899 919
+
+PARA CAMBIAR PRECIOS:
+Editar el archivo app.js en la sección "products".
+
+PARA CAMBIAR ACCESORIOS:
+Editar el archivo app.js en la sección "accessories".
