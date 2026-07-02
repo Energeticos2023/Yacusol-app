@@ -1,15 +1,15 @@
-const CACHE_NAME = 'yacusol-pwa-v1';
+const CACHE_NAME = 'yacusol-pwa-v2-root';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './manifest.json',
-  './assets/logo-energeticos.jpg',
-  './assets/icon-192.png',
-  './assets/icon-512.png',
-  './assets/terma-hero.jpg',
-  './assets/poster-precios.png'
+  './logo-energeticos.jpg',
+  './icon-192.png',
+  './icon-512.png',
+  './terma-hero.jpg',
+  './poster-precios.png'
 ];
 
 self.addEventListener('install', event => {
