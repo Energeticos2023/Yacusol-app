@@ -1,4 +1,4 @@
-const BUILD_VERSION = 'SUS316-v2-2026-07-02';
+const BUILD_VERSION = 'SUS316-MANTENIMIENTO-FINAL-2026-07-03';
 const WHATSAPP = "51942899919";
 
 const products = [
@@ -29,40 +29,33 @@ function navTo(id){
 
 document.querySelectorAll("[data-nav]").forEach(el => el.addEventListener("click", () => navTo(el.dataset.nav)));
 
+function whatsAppUrl(message){ return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`; }
+
 function renderProducts(){
   const list = document.getElementById("modelsList");
   list.innerHTML = products.map(p => `
     <article class="product-card">
-      <div class="product-head">
-        <h3 class="product-title">${p.modelo}</h3>
-        <div class="price">${sol.format(p.precio)}</div>
-      </div>
+      <div class="product-head"><h3 class="product-title">${p.modelo}</h3><div class="price">${sol.format(p.precio)}</div></div>
       <div class="meta">
-        <span class="badge">${p.personas}</span>
-        <span class="badge">${p.id}</span>
-        <span class="badge">Garantía 5 años</span>
-        <span class="badge">SUS 316</span>
+        <span class="badge">${p.personas}</span><span class="badge">${p.id}</span><span class="badge">Garantía 5 años</span><span class="badge">SUS 316</span>
       </div>
       <p class="desc">${p.desc}</p>
       <div class="card-actions">
         <button class="btn secondary" onclick="quoteModel('${p.id}')">Cotizar</button>
         <a class="btn whatsapp" target="_blank" rel="noopener" href="${whatsAppUrl(`Hola, quiero información del modelo ${p.modelo} de ${p.personas}.`)}">WhatsApp</a>
       </div>
-    </article>
-  `).join("");
+    </article>`).join("");
 }
 
 function renderAccessories(){
   const list = document.getElementById("accessoriesList");
   list.innerHTML = accessories.map(a => `
     <article class="accessory-card">
-      <span class="price">${sol.format(a.price)}</span>
-      <h4>${a.name}</h4>
+      <span class="price">${sol.format(a.price)}</span><h4>${a.name}</h4>
       <p><strong>Para el cliente:</strong> ${a.client}</p>
       <p><strong>Función técnica:</strong> ${a.tech}</p>
       <p><strong>Cuándo recomendar:</strong> ${a.when}</p>
-    </article>
-  `).join("");
+    </article>`).join("");
 }
 
 function recommendByPeople(n){
@@ -74,12 +67,6 @@ function updateRecommendation(){
   const p = recommendByPeople(document.getElementById("qPeople").value);
   const box = document.getElementById("recommendationBox");
   box.innerHTML = `<span>Modelo recomendado</span><strong>${p.modelo}</strong><small>${sol.format(p.precio)} · ${p.personas}</small>`;
-  box.dataset.model = p.modelo;
-  box.dataset.price = p.precio;
-}
-
-function whatsAppUrl(message){
-  return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
 }
 
 function quoteModel(id){
@@ -103,19 +90,17 @@ document.getElementById("quoteForm").addEventListener("submit", e => {
   window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, "_blank");
 });
 
-let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
-window.addEventListener("beforeinstallprompt", e => {
+document.getElementById("maintenanceForm").addEventListener("submit", e => {
   e.preventDefault();
-  deferredPrompt = e;
-  installBtn.hidden = false;
-});
-installBtn.addEventListener("click", async () => {
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.hidden = true;
+  const name = document.getElementById("mName").value.trim() || "Cliente por confirmar";
+  const phone = document.getElementById("mPhone").value.trim() || "Celular por confirmar";
+  const address = document.getElementById("mAddress").value.trim() || "Dirección por confirmar";
+  const city = document.getElementById("mCity").value.trim() || "Ciudad/distrito por confirmar";
+  const tubes = document.getElementById("mTubes").value;
+  const problem = document.getElementById("mProblem").value;
+  const comment = document.getElementById("mComment").value.trim() || "Sin comentario adicional";
+  const msg = `Hola, solicito mantenimiento para mi terma solar YACUSOL.%0A%0ACliente: ${name}%0ACelular: ${phone}%0ADirección: ${address}%0ADistrito/Ciudad: ${city}%0ANúmero de tubos: ${tubes}%0AProblema principal: ${problem}%0AComentario: ${comment}%0A%0APor favor confirmar costo, disponibilidad y programación del servicio.`;
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`, "_blank");
 });
 
 renderProducts();
@@ -125,4 +110,3 @@ updateRecommendation();
 if("serviceWorker" in navigator){
   window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.warn));
 }
-console.log('YACUSOL build', BUILD_VERSION);

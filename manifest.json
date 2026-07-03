@@ -1,7 +1,7 @@
 {
   "name": "YACUSOL - Termas solares",
   "short_name": "YACUSOL",
-  "description": "Catálogo, cotizador rápido y contacto por WhatsApp para termas solares YACUSOL.",
+  "description": "Catálogo, cotizador rápido, accesorios y mantenimiento por WhatsApp para termas solares YACUSOL.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#eaf4ff",

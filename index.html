@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#073b82">
-  <meta name="description" content="Catálogo, cotizador rápido y contacto por WhatsApp para termas solares YACUSOL.">
+  <meta name="description" content="Catálogo, cotizador rápido, accesorios y mantenimiento por WhatsApp para termas solares YACUSOL.">
   <title>YACUSOL · Termas solares</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png">
@@ -28,15 +28,13 @@
         <div class="hero-card">
           <span class="pill">Precios a nivel nacional</span>
           <h2>Agua caliente con energía solar</h2>
-          <p class="lead">Catálogo, cotizador rápido y contacto directo por WhatsApp para vender termas solares YACUSOL.</p>
+          <p class="lead">Catálogo, cotizador rápido, accesorios y mantenimiento por WhatsApp para termas solares YACUSOL.</p>
           <img src="terma-hero.jpg" alt="Terma solar YACUSOL" class="hero-img">
           <div class="hero-actions">
             <button class="btn primary" data-nav="cotizar">Cotizar ya</button>
             <button class="btn secondary" data-nav="modelos">Ver modelos</button>
           </div>
-          <a class="btn whatsapp big" href="https://wa.me/51942899919?text=Hola%2C%20quiero%20cotizar%20una%20terma%20solar%20YACUSOL" target="_blank" rel="noopener">
-            WhatsApp 942 899 919
-          </a>
+          <a class="btn whatsapp big" href="https://wa.me/51942899919?text=Hola%2C%20quiero%20cotizar%20una%20terma%20solar%20YACUSOL" target="_blank" rel="noopener">WhatsApp 942 899 919</a>
         </div>
 
         <div class="section-card">
@@ -65,14 +63,9 @@
           <h2>Recomendar una terma</h2>
           <p class="lead">Complete los datos básicos y envíe la consulta por WhatsApp.</p>
         </div>
-
         <form class="quote-card" id="quoteForm">
-          <label>Nombre del cliente
-            <input type="text" id="qName" placeholder="Ejemplo: Juan Pérez">
-          </label>
-          <label>Ciudad / distrito
-            <input type="text" id="qCity" placeholder="Ejemplo: Huaraz - Independencia">
-          </label>
+          <label>Nombre del cliente<input type="text" id="qName" placeholder="Ejemplo: Juan Pérez"></label>
+          <label>Ciudad / distrito<input type="text" id="qCity" placeholder="Ejemplo: Huaraz - Independencia"></label>
           <label>Cantidad de personas
             <select id="qPeople">
               <option value="3">3 personas</option>
@@ -100,9 +93,7 @@
             </select>
           </label>
           <div class="recommendation" id="recommendationBox">
-            <span>Modelo recomendado</span>
-            <strong>YACUSOL 120 L</strong>
-            <small>S/ 1,350 · 3 personas</small>
+            <span>Modelo recomendado</span><strong>YACUSOL 120 L</strong><small>S/ 1,350 · 3 personas</small>
           </div>
           <button class="btn whatsapp big" type="submit">Enviar consulta por WhatsApp</button>
           <p class="note">La recomendación es referencial. La venta debe validarse con ubicación, techo, tanque elevado, sombras y ruta de tubería.</p>
@@ -118,35 +109,48 @@
         <div id="accessoriesList" class="cards-list"></div>
       </section>
 
-      <section class="screen" id="panel">
+      <section class="screen" id="mantenimiento">
         <div class="top-card compact">
-          <span class="pill">Panel comercial</span>
-          <h2>YACUSOL · ENERGÉTICOS</h2>
-          <p class="lead">Herramientas rápidas para ventas y contacto.</p>
+          <span class="pill">Servicio técnico YACUSOL</span>
+          <h2>Solicitar mantenimiento</h2>
+          <p class="lead">Ingrese los datos básicos de su terma solar y envíe la solicitud directa por WhatsApp.</p>
         </div>
-
-        <div class="section-card">
-          <h3>Contactos WhatsApp</h3>
-          <div class="contact-grid">
-            <a href="https://wa.me/51961120481" target="_blank" rel="noopener">961 120 481</a>
-            <a href="https://wa.me/51983926721" target="_blank" rel="noopener">983 926 721</a>
-            <a href="https://wa.me/51942899919" target="_blank" rel="noopener">942 899 919</a>
+        <form class="quote-card" id="maintenanceForm">
+          <label>Nombre del cliente<input type="text" id="mName" placeholder="Ejemplo: Juan Pérez"></label>
+          <label>Celular de contacto<input type="tel" id="mPhone" placeholder="Ejemplo: 942899919"></label>
+          <label>Dirección de instalación<input type="text" id="mAddress" placeholder="Ejemplo: Av. Centenario 568, Huaraz"></label>
+          <label>Distrito / ciudad<input type="text" id="mCity" placeholder="Ejemplo: Independencia - Huaraz"></label>
+          <label>Número de tubos de la terma
+            <select id="mTubes">
+              <option value="10 tubos">10 tubos</option>
+              <option value="12 tubos">12 tubos</option>
+              <option value="15 tubos">15 tubos</option>
+              <option value="18 tubos">18 tubos</option>
+              <option value="20 tubos">20 tubos</option>
+              <option value="24 tubos">24 tubos</option>
+              <option value="30 tubos">30 tubos</option>
+              <option value="36 tubos">36 tubos</option>
+              <option value="No sé / por verificar">No sé / por verificar</option>
+            </select>
+          </label>
+          <label>Problema principal
+            <select id="mProblem">
+              <option>No calienta como antes</option>
+              <option>Fuga de agua</option>
+              <option>Tubo roto</option>
+              <option>Limpieza preventiva</option>
+              <option>Revisión general</option>
+              <option>Instalación de accesorio</option>
+              <option>Otro / por verificar</option>
+            </select>
+          </label>
+          <label>Comentario adicional<textarea id="mComment" rows="3" placeholder="Ejemplo: La terma está en la azotea, tercer piso."></textarea></label>
+          <div class="recommendation maintenance-box">
+            <span>Solicitud de mantenimiento</span><strong>Enviar datos por WhatsApp</strong><small>Un asesor confirmará disponibilidad y programación del servicio.</small>
           </div>
-        </div>
-
-        <div class="section-card">
-          <h3>Condiciones comerciales</h3>
-          <ul class="clean-list">
-            <li>Despacho a nivel nacional.</li>
-            <li>Entrega en agencia de transporte.</li>
-            <li>El flete es asumido por el cliente.</li>
-            <li>No incluye instalación ni traslado al domicilio.</li>
-            <li>Validar techo, tanque elevado, sombras y ruta de tubería.</li>
-          </ul>
-        </div>
-
-        <button class="btn primary big" id="installBtn" hidden>Instalar aplicación</button>
-        <a class="btn secondary big" href="https://energeticos2023.github.io/YACUSOL" target="_blank" rel="noopener">Abrir web YACUSOL</a>
+          <button class="btn whatsapp big" type="submit">Enviar mantenimiento por WhatsApp</button>
+          <p class="note">El servicio será confirmado por ENERGÉTICOS según ubicación, acceso al techo, estado de la terma y disponibilidad técnica.</p>
+        </form>
       </section>
 
       <nav class="bottom-nav" aria-label="Menú principal">
@@ -154,7 +158,7 @@
         <button class="nav-item" data-nav="modelos"><span>☀️</span>Modelos</button>
         <button class="nav-item" data-nav="cotizar"><span>🧾</span>Cotizar</button>
         <button class="nav-item" data-nav="accesorios"><span>🛠️</span>Accesorios</button>
-        <button class="nav-item" data-nav="panel"><span>📊</span>Panel</button>
+        <button class="nav-item" data-nav="mantenimiento"><span>🔧</span>Mantenimiento</button>
       </nav>
     </section>
   </main>

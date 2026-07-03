@@ -1,31 +1,24 @@
-YACUSOL - APP CLIENTE PWA - VERSIÓN CORREGIDA PARA GITHUB
+YACUSOL - APP CLIENTE PWA - SUS316 + MANTENIMIENTO
 
-Esta versión está corregida para que las imágenes estén en la raíz del repositorio,
-tal como aparecen en tu GitHub actual.
+NOVEDADES:
+- Se conserva SUS 316 en textos y tarjetas.
+- Se agrega botón inferior: Mantenimiento.
+- El cliente puede ingresar:
+  * Nombre
+  * Celular
+  * Dirección
+  * Distrito / ciudad
+  * Número de tubos
+  * Problema principal
+  * Comentario adicional
+- Botón para enviar solicitud de mantenimiento por WhatsApp al 942 899 919.
 
 SUBIR A GITHUB:
-1. Entra al repositorio Yacusol-app.
-2. Click en Add file > Upload files.
-3. Sube todos estos archivos.
-4. Confirma reemplazar los archivos existentes.
-5. Click en Commit changes.
-6. Espera 1 o 2 minutos.
-7. Abre la web y presiona Ctrl + F5.
-
-ARCHIVOS PRINCIPALES:
-- index.html
-- styles.css
-- app.js
-- manifest.json
-- service-worker.js
-- logo-energeticos.jpg
-- terma-hero.jpg
-- icon-192.png
-- icon-512.png
-- poster-precios.png
-
-IMPORTANTE:
-Esta versión NO usa carpeta assets.
-
-VERSIÓN: SUS316-v2-2026-07-02
-Nota: actualizar todos los archivos y forzar recarga del navegador.
+1. Descomprimir este ZIP.
+2. Entrar al repositorio Yacusol-app.
+3. Add file > Upload files.
+4. Subir TODOS los archivos descomprimidos.
+5. Aceptar reemplazar archivos existentes.
+6. Commit changes.
+7. Esperar 1 a 2 minutos.
+8. Abrir la app con Ctrl + F5 o con ?v=mantenimiento.
