@@ -1,11 +1,11 @@
 {
-  "name": "YACUSOL - Termas solares",
-  "short_name": "YACUSOL",
-  "description": "Catálogo, cotizador rápido, accesorios y mantenimiento por WhatsApp para termas solares YACUSOL.",
-  "start_url": "./index.html",
+  "name": "ENERGÉTICOS - Termas Solares",
+  "short_name": "Termas Solar",
+  "description": "Catálogo multimarca de termas solares: YACUSOL, XOLMAX, LUXXOL e INTIPOWER.",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#eaf4ff",
-  "theme_color": "#073b82",
+  "background_color": "#eaf1f8",
+  "theme_color": "#0a3f88",
   "icons": [
     {
       "src": "icon-192.png",

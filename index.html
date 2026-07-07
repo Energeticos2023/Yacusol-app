@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#073b82">
-  <meta name="description" content="Catálogo, cotizador rápido, accesorios y mantenimiento por WhatsApp para termas solares YACUSOL.">
-  <title>YACUSOL · Termas solares</title>
+  <meta name="theme-color" content="#0a3f88">
+  <meta name="description" content="App multimarca de ENERGÉTICOS para YACUSOL, XOLMAX, LUXXOL e INTIPOWER. Catálogo, cotización, accesorios, mantenimiento y comentarios.">
+  <title>ENERGÉTICOS · Termas Solares</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,64 +16,99 @@
     <section class="app">
       <header class="brand-header">
         <div class="brand-logo-wrap">
-          <img src="logo-energeticos.jpg" alt="ENERGÉTICOS" class="brand-logo">
+          <img src="logo-energeticos.jpg" alt="Logo ENERGÉTICOS" class="brand-logo">
         </div>
         <div class="brand-title">
-          <h1>YACUSOL</h1>
-          <p>Termas solares · ENERGÉTICOS</p>
+          <h1>TERMAS SOLARES</h1>
+          <p>YACUSOL · XOLMAX · LUXXOL · INTIPOWER</p>
+          <small>ENERGÉTICOS · Huaraz, Áncash</small>
         </div>
       </header>
 
       <section class="screen active" id="inicio">
         <div class="hero-card">
-          <span class="pill">Precios a nivel nacional</span>
+          <span class="pill">Variedad para todos tus clientes</span>
           <h2>Agua caliente con energía solar</h2>
-          <p class="lead">Catálogo, cotizador rápido, accesorios y mantenimiento por WhatsApp para termas solares YACUSOL.</p>
-          <img src="terma-hero.jpg" alt="Terma solar YACUSOL" class="hero-img">
-          <div class="hero-actions">
-            <button class="btn primary" data-nav="cotizar">Cotizar ya</button>
-            <button class="btn secondary" data-nav="modelos">Ver modelos</button>
+          <p class="lead">Explora nuestras líneas YACUSOL, XOLMAX, LUXXOL e INTIPOWER. Aquí podrás ver modelos, precios, cotizar por WhatsApp, solicitar mantenimiento y dejar tus comentarios.</p>
+          <div class="quick-brands home-grid" id="homeBrands"></div>
+          <div class="hero-actions grid-two">
+            <button class="btn primary" data-nav="marcas">Ver catálogo</button>
+            <button class="btn secondary" data-nav="cotizar">Cotizar ahora</button>
           </div>
-          <a class="btn whatsapp big" href="https://wa.me/51942899919?text=Hola%2C%20quiero%20cotizar%20una%20terma%20solar%20YACUSOL" target="_blank" rel="noopener">WhatsApp 942 899 919</a>
+          <a class="btn whatsapp big" href="https://wa.me/51942899919?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20termas%20solares%20multimarca%20de%20ENERG%C3%89TICOS" target="_blank" rel="noopener">WhatsApp 942 899 919</a>
         </div>
 
         <div class="section-card">
-          <h3>Beneficios principales</h3>
+          <h3>Marcas principales</h3>
+          <div class="brand-tags">
+            <span>YACUSOL</span>
+            <span>XOLMAX</span>
+            <span>LUXXOL</span>
+            <span>INTIPOWER</span>
+          </div>
           <div class="benefits">
-            <div><strong>SUS 316</strong><span>Acero inoxidable</span></div>
-            <div><strong>5 años</strong><span>Garantía</span></div>
-            <div><strong>Nacional</strong><span>Entrega en agencia</span></div>
-            <div><strong>Soporte</strong><span>Respaldo técnico</span></div>
+            <div><strong>Despacho</strong><span>A nivel nacional</span></div>
+            <div><strong>Soporte</strong><span>Asesoría técnica</span></div>
+            <div><strong>Mantto.</strong><span>Atención por WhatsApp</span></div>
+            <div><strong>Catálogo</strong><span>Modelos y precios</span></div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3>Enlaces directos</h3>
+          <div class="contact-links">
+            <a class="link-card" href="https://www.facebook.com/INGENIEROS.RYC/" target="_blank" rel="noopener">Facebook ENERGÉTICOS</a>
+            <a class="link-card" href="https://www.facebook.com/profile.php?id=61590174891879" target="_blank" rel="noopener">Facebook YACUSOL</a>
+            <a class="link-card" href="https://energeticos2023.github.io/YACUSOL/" target="_blank" rel="noopener">Web YACUSOL</a>
+            <a class="link-card" href="https://energeticos2023.github.io/energeticos/" target="_blank" rel="noopener">Web ENERGÉTICOS</a>
+            <a class="link-card" href="https://www.tiktok.com/@energeticos6?_r=1&_t=ZS-975HwoikcUa" target="_blank" rel="noopener">TikTok ENERGÉTICOS</a>
           </div>
         </div>
       </section>
 
-      <section class="screen" id="modelos">
+      <section class="screen" id="marcas">
         <div class="top-card compact">
-          <span class="pill">Catálogo YACUSOL</span>
-          <h2>Modelos y precios</h2>
-          <p class="lead">Precios válidos para despacho a nivel nacional. El flete es asumido por el cliente.</p>
+          <span class="pill">Catálogo multimarca</span>
+          <h2>Modelos, precios y fichas comerciales</h2>
+          <p class="lead">Precios válidos para despacho a nivel nacional. El flete es asumido por el cliente. Los datos técnicos mostrados son referenciales y pueden validarse con la ficha técnica del modelo.</p>
         </div>
+
+        <div class="section-card">
+          <h3>Filtrar por marca</h3>
+          <div class="brand-filter" id="brandFilters"></div>
+        </div>
+
+        <div class="section-card no-pad">
+          <img src="lista-precios-final.png" alt="Lista de precios final de termas solares" class="full-img">
+        </div>
+
+        <div class="section-card brand-highlight" id="brandHighlight"></div>
         <div id="modelsList" class="cards-list"></div>
       </section>
 
       <section class="screen" id="cotizar">
         <div class="top-card compact">
           <span class="pill">Cotizador rápido</span>
-          <h2>Recomendar una terma</h2>
-          <p class="lead">Complete los datos básicos y envíe la consulta por WhatsApp.</p>
+          <h2>Solicitar cotización</h2>
+          <p class="lead">Complete los datos básicos y le prepararemos una atención rápida por WhatsApp.</p>
         </div>
         <form class="quote-card" id="quoteForm">
-          <label>Nombre del cliente<input type="text" id="qName" placeholder="Ejemplo: Juan Pérez"></label>
+          <label>Nombre del cliente<input type="text" id="qName" placeholder="Ejemplo: Juan Pérez" required></label>
+          <label>Celular de contacto<input type="tel" id="qPhone" placeholder="Ejemplo: 942899919"></label>
           <label>Ciudad / distrito<input type="text" id="qCity" placeholder="Ejemplo: Huaraz - Independencia"></label>
+          <label>Marca de interés
+            <select id="qBrand"></select>
+          </label>
+          <label>Capacidad o modelo de interés
+            <select id="qModel"></select>
+          </label>
           <label>Cantidad de personas
             <select id="qPeople">
-              <option value="3">3 personas</option>
-              <option value="4">4 personas</option>
-              <option value="5">5 personas</option>
-              <option value="6">6 personas</option>
-              <option value="8">7 a 8 personas</option>
-              <option value="12">10 a 12 personas</option>
+              <option value="2 a 3 personas">2 a 3 personas</option>
+              <option value="4 a 5 personas">4 a 5 personas</option>
+              <option value="6 a 8 personas">6 a 8 personas</option>
+              <option value="9 a 12 personas">9 a 12 personas</option>
+              <option value="Más de 12 personas">Más de 12 personas</option>
             </select>
           </label>
           <label>Tipo de techo
@@ -92,47 +127,51 @@
               <option>Por verificar en visita técnica</option>
             </select>
           </label>
+          <label>Comentario adicional<textarea id="qNote" rows="3" placeholder="Ejemplo: Deseo instalación completa y accesorios."></textarea></label>
           <div class="recommendation" id="recommendationBox">
-            <span>Modelo recomendado</span><strong>YACUSOL 120 L</strong><small>S/ 1,350 · 3 personas</small>
+            <span>Resumen de interés</span><strong>Seleccione una marca y modelo</strong><small>La atención final se confirmará por WhatsApp.</small>
           </div>
-          <button class="btn whatsapp big" type="submit">Enviar consulta por WhatsApp</button>
-          <p class="note">La recomendación es referencial. La venta debe validarse con ubicación, techo, tanque elevado, sombras y ruta de tubería.</p>
+          <button class="btn whatsapp big" type="submit">Enviar cotización por WhatsApp</button>
         </form>
       </section>
 
       <section class="screen" id="accesorios">
         <div class="top-card compact">
           <span class="pill">Complementos</span>
-          <h2>Accesorios y función</h2>
-          <p class="lead">Explique al cliente para qué sirve cada accesorio y cuándo recomendarlo.</p>
+          <h2>Accesorios recomendados</h2>
+          <p class="lead">Explique al cliente para qué sirve cada accesorio y cuándo conviene incluirlo.</p>
         </div>
         <div id="accessoriesList" class="cards-list"></div>
       </section>
 
       <section class="screen" id="mantenimiento">
         <div class="top-card compact">
-          <span class="pill">Servicio técnico YACUSOL</span>
+          <span class="pill">Servicio técnico</span>
           <h2>Solicitar mantenimiento</h2>
-          <p class="lead">Ingrese los datos básicos de su terma solar y envíe la solicitud directa por WhatsApp.</p>
+          <p class="lead">Ingrese los datos de la terma solar y envíe su solicitud directa por WhatsApp.</p>
         </div>
         <form class="quote-card" id="maintenanceForm">
-          <label>Nombre del cliente<input type="text" id="mName" placeholder="Ejemplo: Juan Pérez"></label>
-          <label>Celular de contacto<input type="tel" id="mPhone" placeholder="Ejemplo: 942899919"></label>
-          <label>Dirección de instalación<input type="text" id="mAddress" placeholder="Ejemplo: Av. Centenario 568, Huaraz"></label>
-          <label>Distrito / ciudad<input type="text" id="mCity" placeholder="Ejemplo: Independencia - Huaraz"></label>
+          <label>Nombre del cliente<input type="text" id="mName" placeholder="Ejemplo: Juan Pérez" required></label>
+          <label>Celular de contacto<input type="tel" id="mPhone" placeholder="Ejemplo: 942899919" required></label>
+          <label>Marca de la terma
+            <select id="mBrand"></select>
+          </label>
           <label>Número de tubos de la terma
             <select id="mTubes">
+              <option value="8 tubos">8 tubos</option>
               <option value="10 tubos">10 tubos</option>
               <option value="12 tubos">12 tubos</option>
               <option value="15 tubos">15 tubos</option>
-              <option value="18 tubos">18 tubos</option>
               <option value="20 tubos">20 tubos</option>
-              <option value="24 tubos">24 tubos</option>
+              <option value="25 tubos">25 tubos</option>
               <option value="30 tubos">30 tubos</option>
-              <option value="36 tubos">36 tubos</option>
+              <option value="40 tubos">40 tubos</option>
+              <option value="50 tubos">50 tubos</option>
               <option value="No sé / por verificar">No sé / por verificar</option>
             </select>
           </label>
+          <label>Dirección de instalación<input type="text" id="mAddress" placeholder="Ejemplo: Av. Centenario 568, Huaraz" required></label>
+          <label>Distrito / ciudad<input type="text" id="mCity" placeholder="Ejemplo: Independencia - Huaraz" required></label>
           <label>Problema principal
             <select id="mProblem">
               <option>No calienta como antes</option>
@@ -144,21 +183,63 @@
               <option>Otro / por verificar</option>
             </select>
           </label>
-          <label>Comentario adicional<textarea id="mComment" rows="3" placeholder="Ejemplo: La terma está en la azotea, tercer piso."></textarea></label>
-          <div class="recommendation maintenance-box">
-            <span>Solicitud de mantenimiento</span><strong>Enviar datos por WhatsApp</strong><small>Un asesor confirmará disponibilidad y programación del servicio.</small>
-          </div>
+          <label>Comentario adicional<textarea id="mComment" rows="3" placeholder="Ejemplo: La terma está en la azotea del tercer piso."></textarea></label>
           <button class="btn whatsapp big" type="submit">Enviar mantenimiento por WhatsApp</button>
-          <p class="note">El servicio será confirmado por ENERGÉTICOS según ubicación, acceso al techo, estado de la terma y disponibilidad técnica.</p>
+          <p class="note">Un asesor de ENERGÉTICOS confirmará disponibilidad, costo y programación del servicio.</p>
         </form>
+      </section>
+
+      <section class="screen" id="comentarios">
+        <div class="top-card compact">
+          <span class="pill">Opinión del cliente</span>
+          <h2>Déjanos tus comentarios</h2>
+          <p class="lead">Los comentarios se guardan en este dispositivo para que el cliente pueda verlos nuevamente al volver a abrir la app.</p>
+        </div>
+        <form class="quote-card" id="commentForm">
+          <label>Nombre<input type="text" id="cName" placeholder="Tu nombre" required></label>
+          <label>Ciudad / distrito<input type="text" id="cCity" placeholder="Ejemplo: Caraz"></label>
+          <label>Marca o servicio
+            <select id="cTopic">
+              <option>YACUSOL</option>
+              <option>XOLMAX</option>
+              <option>LUXXOL</option>
+              <option>INTIPOWER</option>
+              <option>Mantenimiento</option>
+              <option>Accesorios</option>
+              <option>Atención general</option>
+            </select>
+          </label>
+          <label>Calificación
+            <select id="cRating">
+              <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+              <option value="4">⭐⭐⭐⭐ Muy bueno</option>
+              <option value="3">⭐⭐⭐ Bueno</option>
+              <option value="2">⭐⭐ Regular</option>
+              <option value="1">⭐ Por mejorar</option>
+            </select>
+          </label>
+          <label>Comentario<textarea id="cText" rows="4" placeholder="Escribe aquí tu experiencia o consulta..." required></textarea></label>
+          <div class="hero-actions grid-two">
+            <button class="btn primary" type="submit">Guardar comentario</button>
+            <button class="btn secondary" type="button" id="shareCommentBtn">Enviar comentario por WhatsApp</button>
+          </div>
+        </form>
+        <div class="section-card">
+          <div class="comments-header">
+            <h3>Comentarios guardados</h3>
+            <button class="mini-btn" id="clearCommentsBtn" type="button">Borrar todo</button>
+          </div>
+          <div id="commentsList" class="comments-list"></div>
+        </div>
       </section>
 
       <nav class="bottom-nav" aria-label="Menú principal">
         <button class="nav-item active" data-nav="inicio"><span>🏠</span>Inicio</button>
-        <button class="nav-item" data-nav="modelos"><span>☀️</span>Modelos</button>
+        <button class="nav-item" data-nav="marcas"><span>☀️</span>Marcas</button>
         <button class="nav-item" data-nav="cotizar"><span>🧾</span>Cotizar</button>
         <button class="nav-item" data-nav="accesorios"><span>🛠️</span>Accesorios</button>
-        <button class="nav-item" data-nav="mantenimiento"><span>🔧</span>Mantenimiento</button>
+        <button class="nav-item" data-nav="mantenimiento"><span>🔧</span>Mantto.</button>
+        <button class="nav-item" data-nav="comentarios"><span>💬</span>Comentarios</button>
       </nav>
     </section>
   </main>
