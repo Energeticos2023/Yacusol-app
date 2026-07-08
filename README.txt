@@ -24,3 +24,9 @@ SUBIR A GITHUB:
 3. Reemplazar archivos existentes.
 4. Commit changes.
 5. Abrir la app con Ctrl+F5 o agregar ?v=2 al enlace.
+
+
+ACTUALIZACIÓN V3:
+- Se agregaron precios de accesorios.
+- Se incorporaron fotos de accesorios proporcionadas por el usuario.
+- Se añadieron accesos rápidos a Accesorios y Contactos desde la pantalla principal.
