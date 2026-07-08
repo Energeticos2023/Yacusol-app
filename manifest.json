@@ -1,11 +1,11 @@
 {
   "name": "ENERGÉTICOS - Termas Solares",
   "short_name": "Termas Solar",
-  "description": "Catálogo multimarca de termas solares: YACUSOL, XOLMAX, LUXXOL e INTIPOWER.",
+  "description": "Catálogo de termas solares YACUSOL Premium, XOLMAX, LUXXOL e INTIPOWER con precios, especificaciones, mantenimiento y atención nacional.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#eaf1f8",
-  "theme_color": "#0a3f88",
+  "background_color": "#eaf3ff",
+  "theme_color": "#073b82",
   "icons": [
     {
       "src": "icon-192.png",
