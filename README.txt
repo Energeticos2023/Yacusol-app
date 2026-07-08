@@ -30,3 +30,9 @@ ACTUALIZACIÓN V3:
 - Se agregaron precios de accesorios.
 - Se incorporaron fotos de accesorios proporcionadas por el usuario.
 - Se añadieron accesos rápidos a Accesorios y Contactos desde la pantalla principal.
+
+
+VERSIÓN V4 ANTICACHÉ:
+- index.html usa styles-v4.css y app-v4.js.
+- service-worker.js borra cachés anteriores y fuerza actualización desde red.
+- Subir todos los archivos al repositorio raíz.
