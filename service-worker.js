@@ -1,9 +1,9 @@
-const CACHE = 'energeticos-termas-v4-anticache';
+const CACHE = 'energeticos-termas-v5-fiestas-patrias';
 const ASSETS = [
   './',
   'index.html',
-  'styles-v4.css?v=4',
-  'app-v4.js?v=4',
+  'styles-v4.css?v=5',
+  'app-v4.js?v=5',
   'manifest.json',
   'icon-192.png',
   'icon-512.png',
@@ -12,7 +12,7 @@ const ASSETS = [
   'xolmax-hero.png',
   'luxxol-hero.png',
   'intipower-hero.png',
-  'lista-precios-final.png',
+  'poster-precios.png',
   'accesorio-valvula-termostatica.jpg',
   'accesorio-tubo-vacio.png',
   'accesorio-tanque-asistente.jpg',
