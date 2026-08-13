@@ -1,24 +1,28 @@
-YACUSOL - APP CLIENTE PWA - SUS316 + MANTENIMIENTO
+ENERGETICOS - APP DE TERMAS SOLARES
+Repositorio: energeticos2023.github.io/Yacusol-app
 
-NOVEDADES:
-- Se conserva SUS 316 en textos y tarjetas.
-- Se agrega botón inferior: Mantenimiento.
-- El cliente puede ingresar:
-  * Nombre
-  * Celular
-  * Dirección
-  * Distrito / ciudad
-  * Número de tubos
-  * Problema principal
-  * Comentario adicional
-- Botón para enviar solicitud de mantenimiento por WhatsApp al 942 899 919.
+COMO INSTALAR
+1. Suba estos 5 archivos a la raiz del repositorio:
+     index.html          (reemplaza el actual)
+     styles-v5.css       (nuevo)
+     app-v5.js           (nuevo)
+     service-worker.js   (reemplaza el actual)
+     manifest.json       (reemplaza el actual)
+2. NO toque las imagenes (logos, fotos de marca, fotos de accesorios, iconos):
+   el nuevo codigo usa los mismos nombres de archivo.
+3. BORRE estos tres archivos del repositorio:
+     styles-v4.css
+     app-v4.js
+     poster-precios.png   -> es el poster de "PRECIOS A NIVEL NACIONAL"
 
-SUBIR A GITHUB:
-1. Descomprimir este ZIP.
-2. Entrar al repositorio Yacusol-app.
-3. Add file > Upload files.
-4. Subir TODOS los archivos descomprimidos.
-5. Aceptar reemplazar archivos existentes.
-6. Commit changes.
-7. Esperar 1 a 2 minutos.
-8. Abrir la app con Ctrl + F5 o con ?v=mantenimiento.
+IMPORTANTE
+Los nombres v5 son a proposito. Los clientes que ya instalaron la app tienen la
+version anterior guardada en el celular; el cambio de nombre obliga a actualizar.
+Si mantuviera los nombres v4, algunos seguirian viendo los precios antiguos.
+
+COMO CAMBIAR UN PRECIO
+Abra app-v5.js y busque el bloque:  const models = [
+Edite el numero en "price". Con eso se actualizan a la vez la lista de precios,
+la pantalla de capacidades y el detalle de cada modelo.
+
+Corporacion R y C Contratistas Generales S.A.C. - ENERGETICOS

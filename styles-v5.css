@@ -1,0 +1,240 @@
+/* =====================================================================
+   ENERGÉTICOS · TERMAS SOLARES — Estilos v5
+   Paleta corporativa unificada con la web YACUSOL
+   ===================================================================== */
+:root{
+  --azul-900:#061C3A;
+  --azul-700:#0C2340;
+  --azul-500:#16315B;
+  --naranja:#F28C1E;
+  --naranja-osc:#D9700A;
+  --dorado:#FFC220;
+  --nieve:#F3F7FC;
+  --linea:#DCE6F2;
+  --texto:#132238;
+  --tenue:#5D7086;
+  --verde:#25D366;
+  --sombra:0 14px 38px rgba(6,28,58,.12);
+  --radio:14px;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--nieve);
+  color:var(--texto);
+  font-family:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+h1,h2,h3,h4,.cond{font-family:"Barlow Condensed","Barlow",Arial,sans-serif;letter-spacing:.2px;margin:0}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--naranja);outline-offset:2px}
+
+.phone-shell{width:min(560px,100%);margin-inline:auto;background:var(--nieve);min-height:100vh;
+  box-shadow:0 0 60px rgba(6,28,58,.10)}
+.app{padding:0 0 96px}
+
+/* ---------- Cabecera ---------- */
+.brand-header{
+  background:linear-gradient(150deg,var(--azul-900),var(--azul-500));
+  color:#fff;padding:18px 18px 20px;display:flex;gap:14px;align-items:center;
+  border-bottom:5px solid var(--naranja);position:sticky;top:0;z-index:40}
+.brand-logo-wrap{background:#fff;border-radius:12px;padding:6px;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.brand-logo{width:58px;height:48px;object-fit:contain}
+.brand-title h1{font-size:29px;font-weight:800;letter-spacing:2px;line-height:1}
+.brand-title p{margin:2px 0 0;font-size:13.5px;color:var(--dorado);font-weight:600}
+.brand-title small{display:block;font-size:12px;color:#AFC6E2;margin-top:2px}
+
+/* ---------- Pantallas ---------- */
+.screen{display:none;padding:16px 14px 0;animation:fade .28s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}}
+.hidden{display:none !important}
+
+/* ---------- Tarjetas base ---------- */
+.hero-card,.section-card,.top-card,.quote-card,.model-card{
+  background:#fff;border:1px solid var(--linea);border-radius:var(--radio);
+  padding:20px;margin-bottom:14px;box-shadow:var(--sombra)}
+.top-card.compact{padding:18px 20px}
+.section-card.no-pad{padding:0;overflow:hidden}
+h2{font-size:31px;font-weight:800;color:var(--azul-700);line-height:1.05;margin:8px 0 6px}
+h3{font-size:23px;font-weight:700;color:var(--azul-700);margin-bottom:8px}
+h4{font-size:21px;font-weight:700;color:var(--azul-700)}
+.lead{color:var(--tenue);font-size:15.5px;margin:0}
+.muted{color:var(--tenue);font-size:14.5px;margin:6px 0 0}
+.note{background:#FFF8EC;border-left:4px solid var(--dorado);border-radius:8px;
+  padding:12px 14px;color:#57492F;font-size:14px;margin:14px 0 0}
+
+.pill{display:inline-block;background:var(--nieve);color:var(--azul-500);
+  font-family:"Barlow Condensed";text-transform:uppercase;letter-spacing:.16em;
+  font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--linea)}
+.premium-pill{background:#FFF2E0;color:var(--naranja-osc);border-color:#FBD9AE}
+.national-pill{background:#EAF3FF;color:var(--azul-500);border-color:#CFE2F8}
+
+/* ---------- Botones ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px 16px;border:0;border-radius:10px;cursor:pointer;
+  font-family:"Barlow Condensed";font-size:18px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;transition:transform .14s ease,filter .14s ease}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--naranja);color:#fff;box-shadow:0 8px 20px rgba(242,140,30,.30)}
+.btn.secondary{background:#fff;color:var(--azul-700);border:2px solid var(--linea)}
+.btn.dark{background:var(--azul-700);color:#fff}
+.btn.national{background:var(--azul-500);color:#fff}
+.btn.whatsapp{background:var(--verde);color:#fff;box-shadow:0 8px 20px rgba(37,211,102,.28)}
+.btn.big{padding:16px;font-size:19px;margin-top:12px}
+.btn.techgo{background:var(--dorado);color:var(--azul-900)}
+.back-btn{background:none;border:0;color:var(--azul-500);font-weight:700;font-size:14.5px;
+  padding:0 0 10px;cursor:pointer;font-family:inherit}
+
+.grid-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+@media(max-width:380px){.grid-two{grid-template-columns:1fr}}
+
+/* ---------- Portada ---------- */
+.cover{
+  position:relative;overflow:hidden;border-radius:var(--radio);margin-bottom:14px;
+  background:linear-gradient(150deg,var(--azul-900),var(--azul-500));
+  color:#fff;padding:26px 22px 24px;box-shadow:var(--sombra)}
+.cover::after{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,194,32,.34),transparent 68%)}
+.cover>*{position:relative;z-index:2}
+.cover h2{color:#fff;font-size:38px;line-height:.98;margin:12px 0 8px}
+.cover h2 span{color:var(--naranja)}
+.cover .lead{color:#CFE0F5}
+.cover .pill{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.24)}
+
+.benefits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.benefits>div{background:var(--nieve);border:1px solid var(--linea);border-radius:10px;padding:12px}
+.benefits strong{display:block;font-family:"Barlow Condensed";font-size:19px;color:var(--azul-700)}
+.benefits span{font-size:13.5px;color:var(--tenue)}
+
+/* ---------- Marcas ---------- */
+.brand-grid{display:grid;gap:12px;margin-top:14px}
+.brand-grid.large{grid-template-columns:1fr}
+.brand-card{
+  position:relative;display:flex;gap:14px;align-items:center;text-align:left;
+  background:#fff;border:1px solid var(--linea);border-left:6px solid var(--azul-500);
+  border-radius:12px;padding:12px;cursor:pointer;font:inherit;width:100%;
+  box-shadow:0 8px 20px rgba(6,28,58,.07);transition:transform .14s ease}
+.brand-card:active{transform:scale(.99)}
+.brand-card.yacusol{border-left-color:var(--naranja)}
+.brand-card.xolmax{border-left-color:#2E6FA8}
+.brand-card.luxxol{border-left-color:#1F8A70}
+.brand-card.intipower{border-left-color:#6E4FA3}
+.brand-card img{width:78px;height:78px;object-fit:cover;border-radius:10px;flex:none;background:var(--nieve)}
+.brand-info strong{display:block;font-family:"Barlow Condensed";font-size:24px;font-weight:800;color:var(--azul-700);letter-spacing:1px}
+.brand-info>span{font-size:13.5px;color:var(--tenue);line-height:1.4}
+.brand-flag{position:absolute;right:10px;top:10px;background:#FFF2E0;color:var(--naranja-osc);
+  font-family:"Barlow Condensed";text-transform:uppercase;letter-spacing:.14em;font-size:11px;
+  font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid #FBD9AE}
+.brand-hero{border-radius:12px;margin-top:14px;max-height:190px;width:100%;object-fit:cover}
+
+/* ---------- Capacidades ---------- */
+.capacity-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.capacity-btn{
+  background:#fff;border:2px solid var(--linea);border-radius:12px;padding:14px 8px;
+  cursor:pointer;font:inherit;text-align:center;transition:border-color .14s ease,transform .14s ease}
+.capacity-btn:active{transform:scale(.97)}
+.capacity-btn:hover{border-color:var(--naranja)}
+.capacity-btn strong{display:block;font-family:"Barlow Condensed";font-size:26px;font-weight:800;color:var(--azul-700);line-height:1}
+.capacity-btn span{display:block;font-size:12px;color:var(--tenue)}
+.capacity-btn em{display:block;font-style:normal;font-family:"Barlow Condensed";font-weight:700;
+  font-size:16px;color:var(--naranja-osc);margin-top:4px}
+
+/* ---------- Detalle de modelo ---------- */
+.price-display{
+  font-family:"Barlow Condensed";font-size:52px;font-weight:800;line-height:1;
+  color:var(--naranja-osc);margin:10px 0 2px}
+.price-display.alt{color:var(--azul-700);font-size:44px}
+.model-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.model-summary>div{background:var(--nieve);border:1px solid var(--linea);border-radius:10px;padding:10px 12px}
+.model-summary strong{display:block;font-family:"Barlow Condensed";text-transform:uppercase;
+  letter-spacing:.14em;font-size:11px;color:var(--azul-500)}
+.model-summary span{font-size:15px;font-weight:600;color:var(--texto)}
+.pack-list{list-style:none;margin:12px 0 0;padding:0}
+.pack-list li{position:relative;padding:7px 0 7px 24px;border-bottom:1px dashed var(--linea);
+  font-size:14.5px;color:var(--tenue)}
+.pack-list li:last-child{border-bottom:0}
+.pack-list li::before{content:"✓";position:absolute;left:0;color:var(--naranja);font-weight:800}
+.spec-list{display:grid;gap:8px;margin-top:10px}
+.spec-item{background:var(--nieve);border-radius:10px;padding:10px 12px;border:1px solid var(--linea)}
+.spec-item strong{display:block;font-family:"Barlow Condensed";text-transform:uppercase;
+  letter-spacing:.13em;font-size:11px;color:var(--azul-500)}
+.spec-item span{font-size:14.5px}
+
+/* ---------- Lista de precios ---------- */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tab{background:#fff;border:2px solid var(--linea);border-radius:999px;padding:8px 16px;
+  font-family:"Barlow Condensed";font-weight:700;font-size:16px;letter-spacing:.06em;
+  color:var(--azul-500);cursor:pointer;text-transform:uppercase}
+.tab.active{background:var(--azul-700);color:#fff;border-color:var(--azul-700)}
+.price-table{width:100%;border-collapse:collapse;margin-top:6px}
+.price-table th{
+  background:var(--azul-700);color:#fff;font-family:"Barlow Condensed";text-transform:uppercase;
+  letter-spacing:.13em;font-size:12px;padding:11px 12px;text-align:left}
+.price-table th.col-precio,.price-table td.col-precio{text-align:right}
+.price-table th.col-tubos,.price-table td.col-tubos{text-align:center;width:64px}
+.price-table td{padding:11px 12px;border-bottom:1px solid var(--linea);font-size:15px;color:var(--tenue);vertical-align:middle}
+.price-table tbody tr:last-child td{border-bottom:0}
+.price-table td strong{display:block;font-family:"Barlow Condensed";font-size:20px;
+  font-weight:800;color:var(--azul-700);line-height:1.1;letter-spacing:.02em}
+.price-table td small{display:block;font-size:12.5px;color:var(--tenue)}
+.price-table td.col-precio{font-family:"Barlow Condensed";font-size:22px;font-weight:800;
+  color:var(--naranja-osc);white-space:nowrap;font-variant-numeric:tabular-nums}
+.table-wrap{overflow-x:auto;border:1px solid var(--linea);border-radius:12px;margin-top:12px}
+
+/* ---------- Accesorios ---------- */
+.cards-list{display:grid;gap:12px}
+.accessory-card{padding:0;overflow:hidden}
+.accessory-media{width:100%;height:180px;object-fit:cover;background:var(--nieve)}
+.accessory-media.placeholder{display:grid;place-items:center;height:78px;color:var(--azul-500);
+  font-family:"Barlow Condensed";text-transform:uppercase;letter-spacing:.16em;font-size:13px;
+  background:linear-gradient(150deg,var(--azul-900),var(--azul-500));color:#fff}
+.accessory-content{padding:16px 18px 18px}
+.accessory-price{font-family:"Barlow Condensed";font-size:29px;font-weight:800;
+  color:var(--naranja-osc);margin:2px 0 8px}
+.accessory-content p{color:var(--tenue);font-size:14.5px;margin:0}
+.accessory-btn{margin-top:14px}
+
+/* ---------- Formularios ---------- */
+.quote-card label{display:block;font-family:"Barlow Condensed";text-transform:uppercase;
+  letter-spacing:.13em;font-size:12px;font-weight:700;color:var(--azul-500);margin-bottom:12px}
+.quote-card input,.quote-card select,.quote-card textarea{
+  display:block;width:100%;margin-top:6px;padding:13px;border:1px solid var(--linea);
+  border-radius:10px;font:inherit;font-size:16px;color:var(--texto);background:#fff;
+  text-transform:none;letter-spacing:normal}
+.quote-card textarea{resize:vertical}
+
+/* ---------- Contactos y redes ---------- */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.contact-card{background:#fff;border:1px solid var(--linea);border-left:5px solid var(--verde);
+  border-radius:12px;padding:14px;box-shadow:0 8px 18px rgba(6,28,58,.06)}
+.contact-card strong{display:block;font-family:"Barlow Condensed";font-size:23px;font-weight:800;color:var(--azul-700)}
+.contact-card span{font-size:13px;color:var(--tenue)}
+.contact-card.engineer{border-left-color:var(--naranja)}
+.contact-card.maintenance{border-left-color:var(--dorado)}
+.contact-card.installer{border-left-color:var(--azul-500)}
+.contact-links{display:grid;gap:10px}
+.link-card{background:#fff;border:1px solid var(--linea);border-radius:12px;padding:15px 16px;
+  font-family:"Barlow Condensed";font-size:19px;font-weight:700;color:var(--azul-700);
+  box-shadow:0 8px 18px rgba(6,28,58,.06);display:flex;justify-content:space-between;align-items:center}
+.link-card::after{content:"→";color:var(--naranja);font-size:20px}
+.link-card.techgo-link{border-left:5px solid var(--dorado)}
+
+/* ---------- Barra inferior ---------- */
+.bottom-nav{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);
+  background:rgba(255,255,255,.97);backdrop-filter:blur(12px);
+  border-top:1px solid var(--linea);display:grid;grid-template-columns:repeat(6,1fr);
+  z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{background:none;border:0;cursor:pointer;padding:9px 2px 10px;font:inherit;
+  font-size:10.5px;font-weight:600;color:var(--tenue);display:flex;flex-direction:column;
+  align-items:center;gap:2px;border-top:3px solid transparent}
+.nav-item span{font-size:19px;line-height:1}
+.nav-item.active{color:var(--naranja-osc);border-top-color:var(--naranja)}
+
+.foot-note{text-align:center;color:var(--tenue);font-size:12.5px;padding:10px 6px 4px;line-height:1.5}
