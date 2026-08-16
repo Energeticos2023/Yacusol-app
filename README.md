@@ -21,3 +21,11 @@ rama contiene la compilación web optimizada para la ruta `/Yacusol-app/`.
 
 Los precios, teléfonos, garantías y fichas técnicas deben ser revisados antes de
 cada publicación.
+
+## Instalación
+
+- Android: descarga oficial en la sección de versiones del repositorio.
+- iPhone/iPad: abrir el sitio en Safari y elegir **Compartir → Agregar a inicio**.
+
+La APK oficial usa el identificador `pe.com.energeticos.yacusol` y está firmada
+con la clave de producción de ENERGÉTICOS.
