@@ -1,276 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0C2340">
-  <meta name="description" content="App de ENERGÉTICOS para termas solares YACUSOL Premium, XOLMAX, LUXXOL e INTIPOWER. Lista de precios, accesorios, mantenimiento y contacto directo.">
-  <title>ENERGÉTICOS · Termas Solares</title>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/Yacusol-app/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Catálogo oficial de termas solares y accesorios YACUSOL de ENERGÉTICOS.">
+  <meta name="theme-color" content="#1A4D8F">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="YACUSOL">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>YACUSOL</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles-v5.css?v=1">
 </head>
 <body>
-<main class="phone-shell">
-<section class="app">
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
 
-<header class="brand-header">
-  <div class="brand-logo-wrap"><img src="logo-energeticos.jpg" alt="Logo ENERGÉTICOS" class="brand-logo"></div>
-  <div class="brand-title">
-    <h1>TERMAS SOLARES</h1>
-    <p>YACUSOL · XOLMAX · LUXXOL · INTIPOWER</p>
-    <small>ENERGÉTICOS · Huaraz, Áncash · envíos a todo el Perú</small>
-  </div>
-</header>
-
-<!-- ================= INICIO ================= -->
-<section class="screen active" id="inicio">
-
-  <div class="cover">
-    <span class="pill">Una sola lista de precios</span>
-    <h2>Elige tu <span>terma solar</span> ideal</h2>
-    <p class="lead">Mira la lista de precios completa, revisa las especificaciones técnicas y
-      pide tu cotización por WhatsApp. El precio que ves aquí es el mismo que te dará cualquiera
-      de nuestros vendedores.</p>
-    <button class="btn primary big" data-nav="precios" type="button">Ver lista de precios</button>
-  </div>
-
-  <div class="section-card">
-    <h3>¿Qué necesitas hacer?</h3>
-    <div class="grid-two">
-      <button class="btn secondary" data-nav="marcas" type="button">Ver marcas</button>
-      <button class="btn secondary" data-nav="accesorios" type="button">Accesorios</button>
-      <button class="btn secondary" data-nav="mantenimiento" type="button">Mantenimiento</button>
-      <button class="btn secondary" data-nav="nacional" type="button">Estoy en otra ciudad</button>
-      <button class="btn secondary" data-nav="comentarios" type="button">Comentarios</button>
-      <button class="btn secondary" data-nav="redes" type="button">Web y redes</button>
-    </div>
-    <a class="btn whatsapp big" href="https://wa.me/51932757214?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20termas%20solares%20de%20ENERG%C3%89TICOS." target="_blank" rel="noopener">Hablar con ventas</a>
-  </div>
-
-  <div class="section-card">
-    <h3>Por qué una terma solar</h3>
-    <p class="muted">Aprovecha el sol de la sierra para tener agua caliente sin depender del gas
-      ni pagar más luz. Instalada y respaldada por técnicos de Huaraz.</p>
-    <div class="benefits">
-      <div><strong>Ahorro</strong><span>Menor gasto mensual en agua caliente.</span></div>
-      <div><strong>Confort</strong><span>Agua caliente para la familia y el negocio.</span></div>
-      <div><strong>Garantía</strong><span>5 años en tanque y estructura de soporte.</span></div>
-      <div><strong>Soporte</strong><span>Asesoría técnica antes y después de la compra.</span></div>
-    </div>
-  </div>
-
-  <div class="section-card">
-    <h3>Marcas disponibles</h3>
-    <p class="muted">YACUSOL es nuestra línea Premium. También ofrecemos LUXXOL, XOLMAX e INTIPOWER
-      para ampliar opciones según presupuesto y capacidad.</p>
-    <div class="brand-grid" id="homeBrands"></div>
-  </div>
-
-  <a class="btn techgo big" href="https://energeticos2023.github.io/TecGo/" target="_blank" rel="noopener">Ir a TecGo · Plataforma técnica</a>
-  <p class="foot-note">ENERGÉTICOS · Jr. Augusto B. Leguía 563, Independencia, Huaraz</p>
-</section>
-
-<!-- ================= LISTA DE PRECIOS ================= -->
-<section class="screen" id="precios">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill premium-pill">Lista oficial</span>
-    <h2>Precios de venta</h2>
-    <p class="lead">Precios en soles, con IGV. Corresponden al equipo: termotanque, tubos al vacío
-      y estructura de soporte. Accesorios, instalación y flete van aparte.</p>
-    <div class="tabs" id="listaTabs"></div>
-  </div>
-
-  <div class="section-card no-pad" id="listaEquipos"></div>
-
-  <div class="top-card compact">
-    <h3>Accesorios y servicios</h3>
-    <p class="lead">Los mismos precios que verás en la página web y en cotizaciones.</p>
-  </div>
-  <div class="section-card no-pad" id="listaAccesorios"></div>
-
-  <div class="section-card">
-    <p class="note"><strong>Envíos a otras ciudades:</strong> el precio del equipo es el mismo en
-      todo el Perú. Lo que se cotiza aparte es el flete hasta la agencia de transporte de tu ciudad
-      y, si la necesitas, la instalación con un técnico local.</p>
-    <button class="btn whatsapp big" type="button" data-nav="contactos">Cotizar por WhatsApp</button>
-  </div>
-</section>
-
-<!-- ================= MARCAS ================= -->
-<section class="screen" id="marcas">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill">Catálogo por marca</span>
-    <h2>Selecciona una marca</h2>
-    <p class="lead">Al elegir una marca se abren sus capacidades disponibles en litros, con el precio de cada una.</p>
-  </div>
-  <div class="brand-grid large" id="brandMenu"></div>
-</section>
-
-<!-- ================= CAPACIDADES ================= -->
-<section class="screen" id="capacidades">
-  <div class="top-card compact" id="brandHeader"></div>
-  <div class="section-card">
-    <h3>Capacidades disponibles</h3>
-    <p class="muted">Toca una capacidad para ver el precio, el paquete y las especificaciones técnicas.</p>
-    <div class="capacity-grid" id="capacityList"></div>
-  </div>
-</section>
-
-<!-- ================= DETALLE DE MODELO ================= -->
-<section class="screen" id="modeloDetalle">
-  <div class="top-card compact" id="modelHeader"></div>
-  <div class="section-card hidden" id="packPanel"></div>
-  <div class="section-card">
-    <h3>Más información</h3>
-    <div class="grid-two">
-      <button class="btn secondary" id="showSpecsBtn" type="button">Ficha técnica</button>
-      <button class="btn secondary" data-nav="accesorios" type="button">Ver accesorios</button>
-    </div>
-    <button class="btn whatsapp big" id="quoteSelectedBtn" type="button">Cotizar este modelo</button>
-  </div>
-  <div class="section-card hidden" id="specPanel"></div>
-</section>
-
-<!-- ================= ACCESORIOS ================= -->
-<section class="screen" id="accesorios">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill">Complementos</span>
-    <h2>Accesorios y servicios</h2>
-    <p class="lead">Para instalación, operación, seguridad y mantenimiento del sistema solar térmico.</p>
-  </div>
-  <div id="accessoriesList" class="cards-list"></div>
-</section>
-
-<!-- ================= OTRAS CIUDADES ================= -->
-<section class="screen" id="nacional">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill national-pill">Fuera de Huaraz</span>
-    <h2>Clientes de otras ciudades</h2>
-    <p class="lead">Mismo precio de equipo en todo el país. Déjanos tus datos y te confirmamos
-      disponibilidad, agencia de despacho y costo de flete.</p>
-  </div>
-  <div class="section-card">
-    <h3>Cómo atendemos</h3>
-    <div class="benefits">
-      <div><strong>1</strong><span>Eliges marca y capacidad.</span></div>
-      <div><strong>2</strong><span>Confirmamos stock y precio.</span></div>
-      <div><strong>3</strong><span>Coordinamos el despacho en agencia.</span></div>
-      <div><strong>4</strong><span>Te damos soporte técnico remoto.</span></div>
-    </div>
-    <p class="note">El flete, el traslado a domicilio y la instalación local se cotizan según tu ciudad y agencia.</p>
-  </div>
-  <form class="quote-card" id="nationalForm">
-    <label>Nombre del cliente<input type="text" id="nName" placeholder="Ejemplo: Carlos Mendoza" required></label>
-    <label>Celular de contacto<input type="tel" id="nPhone" placeholder="Ejemplo: 987654321" required></label>
-    <label>Ciudad o región<input type="text" id="nCity" placeholder="Ejemplo: Trujillo, La Libertad" required></label>
-    <label>Marca de interés<select id="nBrand"></select></label>
-    <label>Capacidad aproximada<select id="nCapacity"></select></label>
-    <label>Comentario<textarea id="nComment" rows="3" placeholder="Ejemplo: Necesito despacho por agencia y asesoría para instalar."></textarea></label>
-    <button class="btn whatsapp big" type="submit">Enviar solicitud</button>
-  </form>
-</section>
-
-<!-- ================= MANTENIMIENTO ================= -->
-<section class="screen" id="mantenimiento">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill">Servicio técnico</span>
-    <h2>Solicitar mantenimiento</h2>
-    <p class="lead">Completa los datos de tu terma solar. La solicitud llega al WhatsApp exclusivo de mantenimiento.</p>
-  </div>
-  <form class="quote-card" id="maintenanceForm">
-    <label>Nombre del cliente<input type="text" id="mName" placeholder="Ejemplo: Juan Pérez" required></label>
-    <label>Celular de contacto<input type="tel" id="mPhone" placeholder="Ejemplo: 942899919" required></label>
-    <label>Marca de la terma<select id="mBrand"></select></label>
-    <label>Número de tubos<select id="mTubes"></select></label>
-    <label>Dirección de instalación<input type="text" id="mAddress" placeholder="Ejemplo: Av. Centenario 568, Huaraz" required></label>
-    <label>Distrito o ciudad<input type="text" id="mCity" placeholder="Ejemplo: Independencia, Huaraz" required></label>
-    <label>Problema principal<select id="mProblem">
-      <option>No calienta como antes</option><option>Fuga de agua</option><option>Tubo roto</option>
-      <option>Limpieza preventiva</option><option>Revisión general</option>
-      <option>Instalación de accesorio</option><option>Otro / por verificar</option></select></label>
-    <label>Comentario adicional<textarea id="mComment" rows="3" placeholder="Ejemplo: La terma está en la azotea del tercer piso."></textarea></label>
-    <button class="btn whatsapp big" type="submit">Enviar a mantenimiento</button>
-  </form>
-</section>
-
-<!-- ================= COMENTARIOS ================= -->
-<section class="screen" id="comentarios">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill">Comentarios y sugerencias</span>
-    <h2>Ayúdanos a mejorar</h2>
-    <p class="lead">Tu comentario llega directamente al Ingeniero Especialista.</p>
-  </div>
-  <form class="quote-card" id="commentForm">
-    <label>Nombre<input type="text" id="cName" placeholder="Tu nombre" required></label>
-    <label>Celular<input type="tel" id="cPhone" placeholder="Tu número de contacto"></label>
-    <label>Ciudad o distrito<input type="text" id="cCity" placeholder="Ejemplo: Caraz"></label>
-    <label>Tema<select id="cTopic">
-      <option>YACUSOL Premium</option><option>XOLMAX</option><option>LUXXOL</option>
-      <option>INTIPOWER</option><option>Precios</option><option>Mantenimiento</option>
-      <option>Accesorios</option><option>Atención en otra ciudad</option><option>Otro comentario</option></select></label>
-    <label>Comentario o sugerencia<textarea id="cText" rows="4" placeholder="Escribe aquí tu comentario o sugerencia..." required></textarea></label>
-    <button class="btn whatsapp big" type="submit">Enviar al Ingeniero</button>
-  </form>
-</section>
-
-<!-- ================= CONTACTOS ================= -->
-<section class="screen" id="contactos">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill">Atención directa</span>
-    <h2>Contactos WhatsApp</h2>
-    <p class="lead">Elige el contacto según lo que necesites.</p>
-  </div>
-  <div class="contact-grid">
-    <a class="contact-card engineer" href="https://wa.me/51942899919" target="_blank" rel="noopener"><strong>942 899 919</strong><span>Ingeniero especialista</span></a>
-    <a class="contact-card sales" href="https://wa.me/51932757214" target="_blank" rel="noopener"><strong>932 757 214</strong><span>Ventas</span></a>
-    <a class="contact-card installer" href="https://wa.me/51961120481" target="_blank" rel="noopener"><strong>961 120 481</strong><span>Instalador</span></a>
-    <a class="contact-card sales" href="https://wa.me/51983926721" target="_blank" rel="noopener"><strong>983 926 721</strong><span>Ventas</span></a>
-    <a class="contact-card sales" href="https://wa.me/51941922712" target="_blank" rel="noopener"><strong>941 922 712</strong><span>Ventas</span></a>
-    <a class="contact-card maintenance" href="https://wa.me/51943354751" target="_blank" rel="noopener"><strong>943 354 751</strong><span>Mantenimiento</span></a>
-  </div>
-</section>
-
-<!-- ================= REDES ================= -->
-<section class="screen" id="redes">
-  <div class="top-card compact">
-    <button class="back-btn" type="button" data-nav="inicio">← Inicio</button>
-    <span class="pill">Canales oficiales</span>
-    <h2>Web y redes</h2>
-    <p class="lead">Nuestras páginas oficiales de ENERGÉTICOS y YACUSOL.</p>
-  </div>
-  <div class="contact-links">
-    <a class="link-card" href="https://energeticos2023.github.io/YACUSOL/" target="_blank" rel="noopener">Página web YACUSOL</a>
-    <a class="link-card" href="https://energeticos2023.github.io/energeticos/" target="_blank" rel="noopener">Página web ENERGÉTICOS</a>
-    <a class="link-card techgo-link" href="https://energeticos2023.github.io/TecGo/" target="_blank" rel="noopener">TecGo · Plataforma técnica</a>
-    <a class="link-card" href="https://www.facebook.com/profile.php?id=61590174891879" target="_blank" rel="noopener">Facebook YACUSOL</a>
-    <a class="link-card" href="https://www.facebook.com/INGENIEROS.RYC/" target="_blank" rel="noopener">Facebook ENERGÉTICOS</a>
-    <a class="link-card" href="https://www.tiktok.com/@energeticos6?_r=1&_t=ZS-975HwoikcUa" target="_blank" rel="noopener">TikTok ENERGÉTICOS</a>
-  </div>
-</section>
-
-<nav class="bottom-nav" aria-label="Menú principal">
-  <button class="nav-item active" data-nav="inicio"><span>🏠</span>Inicio</button>
-  <button class="nav-item" data-nav="precios"><span>🏷️</span>Precios</button>
-  <button class="nav-item" data-nav="marcas"><span>☀️</span>Marcas</button>
-  <button class="nav-item" data-nav="accesorios"><span>🧰</span>Accesorios</button>
-  <button class="nav-item" data-nav="mantenimiento"><span>🔧</span>Mantto.</button>
-  <button class="nav-item" data-nav="contactos"><span>💬</span>Contacto</button>
-</nav>
-
-</section>
-</main>
-<script src="app-v5.js?v=1"></script>
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
