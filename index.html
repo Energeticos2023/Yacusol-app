@@ -1,47 +1,291 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="/Yacusol-app/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="Catálogo oficial de termas solares y accesorios YACUSOL de ENERGÉTICOS.">
   <meta name="theme-color" content="#1A4D8F">
 
-  <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="YACUSOL">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>YACUSOL</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    :root {
+      --yacusol-blue: #0d3f86;
+      --yacusol-blue-2: #1465b8;
+      --yacusol-orange: #f36c0a;
+      --yacusol-yellow: #ffd43b;
+      --yacusol-light: #f5f9ff;
+      --yacusol-text: #12345a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body { margin: 0; }
+
+    #yacusol-promo {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      overflow-y: auto;
+      background:
+        radial-gradient(circle at 85% 8%, rgba(255, 212, 59, .28), transparent 24%),
+        linear-gradient(145deg, rgba(6, 35, 76, .97), rgba(13, 63, 134, .96) 52%, rgba(20, 101, 184, .94));
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #yacusol-promo.is-hidden { display: none; }
+
+    .promo-card {
+      position: relative;
+      width: min(100%, 610px);
+      overflow: hidden;
+      border-radius: 28px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .35);
+      border: 1px solid rgba(255,255,255,.55);
+    }
+
+    .promo-top {
+      padding: 24px 22px 20px;
+      color: #fff;
+      text-align: center;
+      background: linear-gradient(135deg, var(--yacusol-blue), var(--yacusol-blue-2));
+    }
+
+    .promo-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      color: var(--yacusol-blue);
+      background: #fff;
+      font-weight: 900;
+      letter-spacing: .7px;
+    }
+
+    .promo-brand .sun { color: var(--yacusol-orange); }
+
+    .promo-eyebrow {
+      margin: 0 0 6px;
+      color: var(--yacusol-yellow);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .promo-title {
+      margin: 0;
+      font-size: clamp(31px, 8vw, 48px);
+      line-height: .98;
+      font-weight: 950;
+      letter-spacing: -1px;
+    }
+
+    .promo-subtitle {
+      margin: 12px auto 0;
+      max-width: 480px;
+      font-size: 17px;
+      line-height: 1.35;
+      font-weight: 700;
+      opacity: .96;
+    }
+
+    .promo-body {
+      padding: 20px;
+      color: var(--yacusol-text);
+      background: linear-gradient(180deg, #ffffff 0%, var(--yacusol-light) 100%);
+    }
+
+    .discount-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .discount-box {
+      min-height: 168px;
+      padding: 17px 14px;
+      border-radius: 20px;
+      text-align: center;
+      border: 2px solid #dbe9fb;
+      background: #fff;
+      box-shadow: 0 9px 24px rgba(18, 52, 90, .08);
+    }
+
+    .discount-box.featured {
+      color: #fff;
+      border-color: var(--yacusol-orange);
+      background: linear-gradient(145deg, #ff7a10, #e94f08);
+    }
+
+    .discount-models {
+      margin-bottom: 9px;
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 900;
+    }
+
+    .discount-label {
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      opacity: .8;
+    }
+
+    .discount-amount {
+      font-size: clamp(35px, 10vw, 52px);
+      line-height: 1;
+      font-weight: 950;
+      color: var(--yacusol-orange);
+    }
+
+    .featured .discount-amount { color: #fff; }
+
+    .discount-note {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .promo-message {
+      margin: 16px 2px 14px;
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .promo-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .promo-btn {
+      display: block;
+      width: 100%;
+      padding: 15px 18px;
+      border: 0;
+      border-radius: 15px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .promo-btn.primary {
+      color: #fff;
+      background: linear-gradient(135deg, #20a83e, #158b31);
+      box-shadow: 0 10px 20px rgba(21, 139, 49, .22);
+    }
+
+    .promo-btn.secondary {
+      color: var(--yacusol-blue);
+      background: #eaf3ff;
+    }
+
+    .promo-footer {
+      margin-top: 12px;
+      text-align: center;
+      color: #5d7086;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .promo-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #fff;
+      background: rgba(0,0,0,.25);
+      font-size: 25px;
+      line-height: 38px;
+    }
+
+    @media (max-width: 520px) {
+      #yacusol-promo { padding: 10px; align-items: flex-start; }
+      .promo-card { margin: 8px 0; border-radius: 22px; }
+      .promo-top { padding: 20px 16px 18px; }
+      .promo-body { padding: 15px; }
+      .discount-grid { grid-template-columns: 1fr; }
+      .discount-box { min-height: 0; }
+    }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <div id="yacusol-promo" role="dialog" aria-modal="true" aria-labelledby="promo-title">
+    <section class="promo-card">
+      <button class="promo-close" type="button" aria-label="Cerrar promoción" onclick="closeYacusolPromo()">×</button>
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+      <header class="promo-top">
+        <div class="promo-brand">YACU<span class="sun">☀</span>SOL</div>
+        <p class="promo-eyebrow">Promoción especial YACUSOL</p>
+        <h1 class="promo-title" id="promo-title">¡TU DESCUENTO TE ESTÁ ESPERANDO!</h1>
+        <p class="promo-subtitle">Compra tu terma solar YACUSOL y accede a un descuento especial en modelos seleccionados.</p>
+      </header>
+
+      <div class="promo-body">
+        <div class="discount-grid">
+          <article class="discount-box">
+            <div class="discount-models">Termas de 120 y 150 litros</div>
+            <div class="discount-label">Descuento especial</div>
+            <div class="discount-amount">S/ 50</div>
+            <div class="discount-note">Aplicable a la compra de cualquiera de estos dos modelos.</div>
+          </article>
+
+          <article class="discount-box featured">
+            <div class="discount-models">Termas de 250 y 300 litros</div>
+            <div class="discount-label">Descuento especial</div>
+            <div class="discount-amount">S/ 100</div>
+            <div class="discount-note">Aplicable a la compra de cualquiera de estos dos modelos.</div>
+          </article>
+        </div>
+
+        <p class="promo-message">☀️ Aprovecha la energía del sol, disfruta agua caliente y llévate tu YACUSOL con un beneficio especial.</p>
+
+        <div class="promo-actions">
+          <a class="promo-btn primary" href="https://wa.me/51942899919?text=Hola%20Ing.%20Rafael%20Ze%C3%B1a.%20Ingres%C3%A9%20a%20la%20App%20YACUSOL%20y%20quiero%20solicitar%20mi%20descuento%20especial." target="_blank" rel="noopener">📲 QUIERO MI DESCUENTO</a>
+          <button class="promo-btn secondary" type="button" onclick="closeYacusolPromo()">VER PRODUCTOS YACUSOL</button>
+        </div>
+
+        <div class="promo-footer">Atención: Ing. Rafael Zeña · 942 899 919 · Huaraz, Áncash<br>Promoción aplicable a los modelos indicados.</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function closeYacusolPromo() {
+      var promo = document.getElementById('yacusol-promo');
+      if (promo) promo.classList.add('is-hidden');
+    }
+  </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
