@@ -219,6 +219,129 @@ function renderAll(){
  renderMaintenancePanel(customers,eq);
 
 }
+
+function phoneActions(row, customer){
+ const raw=customer?.telefono?.trim();
+ if(!raw){row.append(el("p","Sin celular registrado. Corrígelo en Mis clientes.","muted small"));return;}
+ row.append(el("p","Celular: "+raw,"phone-display"));
+ const phone=raw.replace(/[^\d+]/g,"");
+ if(!/^\+?[1-9]\d{6,14}$/.test(phone))return;
+ const actions=el("div",null,"maintenance-actions");
+ const call=el("a","Llamar");call.href="tel:"+phone;call.className="contact-action";actions.append(call);
+ let digits=phone.replace(/\D/g,"");
+ if(digits.length===9&&digits.startsWith("9"))digits="51"+digits;
+ if(digits.length>=10&&digits.length<=15){
+  const wa=el("a","WhatsApp");wa.href="https://wa.me/"+digits;wa.target="_blank";wa.rel="noopener noreferrer";wa.className="contact-action whatsapp";
+  wa.setAttribute("aria-label","Abrir chat de WhatsApp sin enviar mensajes");
+  actions.append(wa);
+ }
+ row.append(actions);
+}
+function renderMaintenancePanel(customers,equipment){
+ const list=$("equipment-list"),history=$("maintenance-list"),filter=$("maintenance-filter").value;
+ list.replaceChildren();history.replaceChildren();
+ const clientMap=new Map(customers.map(c=>[c.id,c]));
+ const dueMap=new Map(dueItems().map(d=>[d.id,d]));
+ const candidates=equipment.filter(e=>(filter==="todos"||e.activo!==false)&&(filter!=="proximos"||(dueMap.has(e.id)&&dueMap.get(e.id).days<=30)));
+ const records=candidates.map(e=>({e,d:dueMap.get(e.id),c:clientMap.get(e.cliente_id)}))
+  .sort((a,b)=>(a.d?.days??Number.MAX_SAFE_INTEGER)-(b.d?.days??Number.MAX_SAFE_INTEGER));
+ for(const {e,d,c} of records.slice(0,250)){
+  const active=e.activo!==false;
+  const row=recordLine(list,(c?.nombre||"Cliente no identificado")+" · "+e.modelo+" "+e.capacidad_l+" L",
+   "Instalación: "+fmtDate(e.instalado_el)+" · Próxima revisión: "+(d?fmtDate(d.date)+" ("+(d.days<0?"vencida":d.days===0?"hoy":d.days+" días")+")":"fecha pendiente")+(c?.zona?" · "+c.zona:""),
+   !active?"Archivado":!d?"Pendiente":d.days<0?"Vencido":d.days<=30?"Próximo":"Programado",
+   !active?"warning":d&&d.days<=30?"warning":"");
+  if(c)phoneActions(row,c);
+  if(state.role==="admin"){
+   const actions=el("div",null,"maintenance-actions");
+   const edit=el("button","Editar equipo");edit.type="button";edit.addEventListener("click",()=>startEquipmentEdit(e));actions.append(edit);
+   const archive=el("button",active?"Eliminar (archivar)":"Restaurar");archive.type="button";archive.addEventListener("click",()=>toggleEquipmentArchive(e));actions.append(archive);
+   row.append(actions);
+  }
+ }
+ if(!records.length)empty(list,filter==="proximos"?"Sin vencimientos durante los próximos 30 días.":"No hay equipos con este filtro.");
+ const items=state.records.mantenimientos||[];
+ for(const m of items.slice(0,150)){
+  const eq=equipment.find(e=>e.id===m.equipo_id),c=clientMap.get(eq?.cliente_id),annulled=m.anulado===true;
+  const row=recordLine(history,(c?.nombre||"Cliente")+" · "+(eq?.modelo||"Equipo")+" · "+fmtDate(m.fecha_realizada),
+   (m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones")+(annulled?" · Motivo anulación: "+(m.motivo_anulacion||"No indicado"):""),
+   annulled?"Anulado":"Realizado",annulled?"warning":"success");
+  if(state.role==="admin"&&!annulled){
+   const actions=el("div",null,"maintenance-actions");
+   const edit=el("button","Editar servicio");edit.type="button";edit.addEventListener("click",()=>startMaintenanceEdit(m));
+   const annul=el("button","Eliminar (anular)");annul.type="button";annul.addEventListener("click",()=>annulMaintenance(m));
+   actions.append(edit,annul);row.append(actions);
+  }
+ }
+ if(!items.length)empty(history,"Todavía no hay servicios registrados.");
+}
+$("maintenance-filter").addEventListener("change",()=>renderMaintenancePanel(state.records.clientes||[],state.records.equipos||[]));
+function startEquipmentEdit(e){
+ if(state.role!=="admin")return;
+ const form=$("equipment-edit-form");
+ fillSelect("maintenance-edit-client",state.records.clientes||[],"Selecciona cliente","id",c=>c.nombre+" · "+(c.zona||""));
+ for(const k of ["id","modelo","capacidad_l","serie","instalado_el","intervalo_meses"])form.elements.namedItem(k).value=e[k]??"";
+ form.elements.namedItem("cliente_id").value=e.cliente_id;
+ form.hidden=false;$("equipment-edit-hint").hidden=true;form.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function closeEquipmentEdit(){const form=$("equipment-edit-form");form.reset();form.hidden=true;$("equipment-edit-hint").hidden=false;}
+$("equipment-edit-cancel").addEventListener("click",closeEquipmentEdit);
+$("equipment-edit-form").addEventListener("submit",async ev=>{
+ ev.preventDefault();if(state.role!=="admin")return;
+ const d=Object.fromEntries(new FormData(ev.target));
+ if(d.instalado_el&&d.instalado_el>localToday())return say("No puedes registrar instalaciones futuras como ejecutadas.");
+ if(!window.confirm("¿Confirmas la corrección de los datos técnicos del equipo?"))return;
+ try{
+  await patchRecord("equipos",d.id,{cliente_id:d.cliente_id,modelo:d.modelo.trim(),capacidad_l:Number(d.capacidad_l),
+    serie:d.serie.trim()||null,instalado_el:d.instalado_el||null,intervalo_meses:Number(d.intervalo_meses)});
+  closeEquipmentEdit();await refresh();say("Equipo editado. Mantenimiento recalculado.");
+ }catch(err){showErr(err,"Editar equipo")}
+});
+async function toggleEquipmentArchive(e){
+ if(state.role!=="admin")return;
+ const archiving=e.activo!==false;let changes;
+ if(archiving){
+  const reason=window.prompt("Motivo de archivo, al menos 6 caracteres. No se borrará el historial:");
+  if(reason===null)return;
+  if(reason.trim().length<6)return say("Explica el motivo de archivo (mínimo 6 caracteres).");
+  if(!window.confirm("¿Archivar esta terma? Saldrá de los mantenimientos activos, pero conservará su historial."))return;
+  changes={activo:false,archivado_en:new Date().toISOString(),archivado_por:state.user.id,motivo_archivo:reason.trim()};
+ }else{
+  if(!window.confirm("¿Restaurar el equipo a la lista de instalaciones activas?"))return;
+  changes={activo:true,archivado_en:null,archivado_por:null,motivo_archivo:null};
+ }
+ try{await patchRecord("equipos",e.id,changes);await refresh();say(archiving?"Equipo archivado, conservando el historial.":"Equipo restaurado.");}
+ catch(err){showErr(err,"Archivar/restaurar equipo")}
+}
+function startMaintenanceEdit(m){
+ if(state.role!=="admin"||m.anulado===true)return;
+ const form=$("maintenance-edit-form");
+ for(const k of ["id","fecha_realizada","tipo","observaciones"])form.elements.namedItem(k).value=m[k]??"";
+ form.hidden=false;form.scrollIntoView({behavior:"smooth",block:"center"});
+}
+$("maintenance-edit-cancel").addEventListener("click",()=>{const f=$("maintenance-edit-form");f.reset();f.hidden=true;});
+$("maintenance-edit-form").addEventListener("submit",async ev=>{
+ ev.preventDefault();if(state.role!=="admin")return;
+ const d=Object.fromEntries(new FormData(ev.target));
+ if(d.fecha_realizada>localToday())return say("La fecha de mantenimiento realizado no puede ser futura.");
+ if(!window.confirm("¿Confirmas que los datos corregidos corresponden a un servicio realmente ejecutado?"))return;
+ try{
+  await patchRecord("mantenimientos",d.id,{fecha_realizada:d.fecha_realizada,tipo:d.tipo,observaciones:d.observaciones||null});
+  ev.target.reset();ev.target.hidden=true;await refresh();say("Registro de mantenimiento editado.");
+ }catch(err){showErr(err,"Editar mantenimiento")}
+});
+async function annulMaintenance(m){
+ if(state.role!=="admin"||m.anulado===true)return;
+ const reason=window.prompt("Motivo de anulación, mínimo 6 caracteres. Se conservará el historial:");
+ if(reason===null)return;
+ if(reason.trim().length<6)return say("Indica por qué se anula este servicio (mínimo 6 caracteres).");
+ if(!window.confirm("¿Anular este servicio? Permanecerá en historial y dejará de afectar la próxima revisión."))return;
+ try{
+  await patchRecord("mantenimientos",m.id,{anulado:true,anulado_en:new Date().toISOString(),anulado_por:state.user.id,motivo_anulacion:reason.trim()});
+  await refresh();say("Registro anulado; historial conservado.");
+ }catch(err){showErr(err,"Anular mantenimiento")}
+}
+
 function addMonths(base,months){
  const d=new Date(base+"T12:00:00Z");
  if(Number.isNaN(d.getTime()))return null;
