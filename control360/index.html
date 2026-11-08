@@ -36,6 +36,7 @@
         <button data-tab="cotizaciones">▤ <span>Cotizaciones</span></button>
         <button data-tab="ventas">◈ <span>Ventas e instalaciones</span></button>
         <button data-tab="media">▧ <span>Mi álbum de fotos y videos</span></button>
+        <button data-tab="ficha">◫ <span>Ficha técnica y visita</span></button>
         <button data-tab="mantenimiento">⚙ <span>Mantenimiento</span></button>
         <button data-tab="campanas">✺ <span>Campañas</span></button>
       </nav>
@@ -183,7 +184,17 @@
               <label class="wide upload-control">Seleccionar foto o video original<input type="file" name="archivo" id="media-file" accept="image/jpeg,image/png,image/webp,video/mp4" required></label>
               <label class="wide">Descripción <input name="nombre" required maxlength="160" placeholder="Montaje de terma YACUSOL"></label>
               <label>Zona <input name="zona" placeholder="Distrito o provincia"></label>
-              <label class="wide">Asociar con un cliente (opcional) <select name="cliente_id" id="upload-media-client"><option value="">Sin cliente asociado</option></select></label>
+              <label class="wide">Cliente de la instalación <select name="cliente_id" id="upload-media-client" required><option value="">Selecciona cliente</option></select></label>
+              <label class="wide">Terma específica <select name="equipo_id" id="upload-media-equipment" required><option value="">Selecciona primero el cliente</option></select></label>
+              <label>Categoría técnica <select name="categoria_tecnica" id="upload-media-category" required>
+                <option value="vista_general">Vista general</option><option value="acceso">Acceso al área</option>
+                <option value="estructura">Estructura y anclajes</option><option value="hidraulica">Tuberías y válvulas</option>
+                <option value="electrica">Conexiones eléctricas</option><option value="termotanque_tubos">Termotanque y tubos</option>
+                <option value="antes_servicio">Antes de servicio</option><option value="durante_servicio">Durante servicio</option>
+                <option value="despues_servicio">Después de servicio</option><option value="otra">Otra</option>
+              </select></label>
+              <label>Fecha de captura <input name="fecha_captura" type="date" max="2099-12-31"></label>
+              <label class="wide">Observación técnica <textarea name="nota_tecnica" maxlength="2000" rows="2" placeholder="Qué muestra, cómo se accede y qué debe verificarse en el sitio"></textarea></label>
               <label>Estado de la obra <select name="etapa_obra"><option value="por_verificar">Por verificar</option><option value="montaje">En montaje</option><option value="instalado">Instalación terminada</option><option value="mantenimiento">Mantenimiento</option></select></label>
               <label class="wide check"><input name="derechos_confirmados" type="checkbox"> Confirmo que este material es propio o que contamos con autorización para conservarlo.</label>
               <label class="wide check"><input name="permiso_publicitario" type="checkbox"> Tenemos autorización expresa para utilizarlo en publicidad.</label>
@@ -208,6 +219,50 @@
           <div id="media-gallery" class="album-grid" aria-live="polite"></div>
           <p class="muted small">Los originales están protegidos. Las miniaturas se muestran con enlaces temporales, únicamente después de iniciar sesión.</p>
         </article>
+      </section>
+
+      <section id="tab-ficha" class="tab-pane" hidden>
+        <div class="section-head"><div><h2>Ficha técnica y preparación de visita</h2><p>Álbum privado y plan de trabajo por cliente y terma. Solo equipos autorizados.</p></div></div>
+        <article class="panel">
+          <label>Seleccionar la terma específica
+            <select id="technical-equipment"><option value="">Selecciona un equipo</option></select>
+          </label>
+          <div id="technical-equipment-summary" class="note section-gap" role="status">Selecciona un equipo para revisar su historial.</div>
+          <div class="maintenance-actions section-gap">
+            <button id="technical-open-upload" class="secondary" type="button">Subir fotos de esta terma</button>
+            <button id="technical-print" class="secondary" type="button">Imprimir ficha de preparación</button>
+          </div>
+        </article>
+        <div class="two-col section-gap">
+          <article class="panel">
+            <div class="panel-title"><h3>Álbum técnico de esta terma</h3><span id="technical-media-count" class="muted">0 archivos</span></div>
+            <div id="technical-gallery" class="album-grid section-gap"></div>
+            <p class="muted small">No se muestran imágenes de otras instalaciones. Los originales son privados y no quedan autorizados automáticamente para publicidad.</p>
+          </article>
+          <article class="panel">
+            <h3>Preparación y seguridad</h3>
+            <form id="preparation-form" class="form-grid">
+              <label class="wide">Acceso al lugar y referencia <textarea name="referencia_acceso" maxlength="600" rows="2" placeholder="Describir acceso observado o pendiente de inspección"></textarea></label>
+              <label>Tipo de acceso <select name="tipo_acceso">
+                <option value="sin_evaluar">Sin evaluar</option><option value="a_nivel">A nivel</option>
+                <option value="escalera_fija">Escalera fija</option><option value="escalera_portatil">Escalera portátil</option>
+                <option value="otro">Otro</option></select></label>
+              <label>Altura aproximada (m) <input type="number" name="altura_aprox_m" min="0" max="100" step="0.1"></label>
+              <label class="wide">Espacio de trabajo <select name="espacio_trabajo">
+                <option value="sin_evaluar">Sin evaluar</option><option value="verificar_en_sitio">Verificar en sitio</option>
+                <option value="limitado">Limitado</option><option value="restricciones_reportadas">Restricciones reportadas</option></select></label>
+              <label class="wide">Riesgos identificados o por verificar <textarea name="riesgos_observados" maxlength="3000" rows="3" placeholder="No inferir riesgos solo a partir de una fotografía. Registrar fuente y necesidad de evaluación"></textarea></label>
+              <label class="wide">Herramientas por prever <textarea name="herramientas_prever" maxlength="2000" rows="2" placeholder="Sugeridas, sujetas a evaluación de seguridad"></textarea></label>
+              <label class="wide">Repuestos por prever <textarea name="repuestos_prever" maxlength="2000" rows="2" placeholder="Confirmar compatibilidad y necesidad antes de viajar"></textarea></label>
+              <label class="wide">Observaciones adicionales <textarea name="observaciones" maxlength="3000" rows="2"></textarea></label>
+              <label class="wide">Nivel de comprobación <select name="nivel_verificacion">
+                <option value="pendiente">Pendiente</option><option value="revision_documental">Revisión documental (no presencial)</option>
+                <option value="verificado_presencial">Verificado presencialmente</option></select></label>
+              <button id="preparation-save" class="primary wide" type="submit">Guardar preparación técnica</button>
+            </form>
+            <p class="muted small">Esta ficha ayuda a planificar. No reemplaza inspección de seguridad, evaluación de acceso, procedimientos ni permisos requeridos para trabajo en altura.</p>
+          </article>
+        </div>
       </section>
 
       <section id="tab-mantenimiento" class="tab-pane" hidden>
