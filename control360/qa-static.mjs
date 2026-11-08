@@ -22,6 +22,22 @@ assert(js.includes("tel:"), "No hay enlace para llamadas");
 assert(js.includes("https://wa.me/"), "No hay enlace WhatsApp");
 assert(js.includes("toggleEquipmentArchive"), "No hay archivo seguro de equipos");
 assert(js.includes("annulMaintenance"), "No hay anulación segura");
+for(const id of ["tab-ficha","technical-equipment","technical-equipment-summary","technical-gallery","technical-media-count","preparation-form","preparation-save","technical-print","technical-open-upload","visit-checklist","upload-media-equipment","upload-media-service","upload-media-category"]){
+  assert(html.includes('id="'+id+'"'), "Falta control técnico "+id);
+}
+assert(js.includes("renderTechnicalSheet"), "Falta ficha técnica por terma");
+assert(js.includes('m.equipo_id===eq.id&&m.cliente_id===eq.cliente_id'), "No se aísla el álbum por equipo y cliente");
+assert(js.includes("openTechnicalSheet"), "Falta acceso a ficha desde mantenimiento");
+assert(js.includes("refreshUploadEquipmentPicker"), "No se filtran termas por cliente");
+assert(js.includes("refreshUploadServicePicker"), "No se vinculan fotos a servicios");
+assert(js.includes("nivel_verificacion"), "No se registra fuente/nivel de verificación");
+const tSchema=read("album-tecnico-schema.sql");
+assert(tSchema.includes("foreign key (equipo_id,cliente_id)"), "Falta consistencia equipo-cliente en SQL");
+assert(tSchema.includes("preparacion_visitas")&&tSchema.includes("enable row level security"),"No se protege ficha técnica");
+const vSchema=read("album-tecnico-servicios.sql");
+assert(vSchema.includes("foreign key (mantenimiento_id,equipo_id)"),"No se protege vínculo fotos-servicio");
+assert(css.includes("@media print"),"No existe ficha imprimible");
+
 assert(css.includes(".maintenance-actions"), "Faltan estilos de acciones");
 const editSchema=read("mantenimiento-edicion-segura.sql");
 assert(editSchema.includes("motivo_anulacion")&&editSchema.includes("motivo_archivo"), "Faltan motivos de auditoría");
