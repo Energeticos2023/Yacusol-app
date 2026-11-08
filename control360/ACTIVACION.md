@@ -41,3 +41,14 @@ Este prototipo NO está publicado ni conectado a clientes reales: se encuentra e
 
 ## Cambios pendientes para producción
 Formulario de ventas y vinculación de equipos, PDF cotizaciones, asignaciones técnicas, gestión de citas, notificaciones consentidas, auditoría de aprobaciones, pruebas de móvil y accesibilidad, conteos agregados paginados a partir de más de 250 registros.
+
+
+## Estado posterior a migraciones, 08/11/2026
+La sección inicial que menciona inexistencia de tablas/bucket describe la auditoría **antes** de su corrección. Se aplicaron exitosamente las migraciones `yacusol_control360_crm_cotizaciones_media_20261108` y `yacusol_control360_indices_conversion_20261108`. Las tablas y el bucket privado fueron verificados tras aplicarlas. Falta crear/invitar una cuenta Auth, asignar rol, probar inicio de sesión, subir archivos, comprobar lectura autorizada y publicar el frontend en main.
+
+### Alta del primer administrador (acción del propietario)
+1. Acceder al proyecto YACUSOL_Gestion en Supabase Dashboard: https://supabase.com/dashboard/project/kdlthtyxsmcehxwgjkrn/auth/users
+2. Elegir **Invite user** y usar `energeticos.ryc@gmail.com`. El receptor acepta y define su contraseña mediante flujo seguro. No compartir contraseñas con el asistente.
+3. Tras existir la cuenta y verificar su titularidad, un operador de proyecto autorizado asigna el rol seguro en `raw_app_meta_data` utilizando el panel administrativo o este SQL dirigido al correo exactamente identificado: `update auth.users set raw_app_meta_data=coalesce(raw_app_meta_data, '{}'::jsonb)||'{"yacusol_role":"admin"}'::jsonb where lower(email)='energeticos.ryc@gmail.com' and email_confirmed_at is not null;`. Comprobar que afectó exactamente una cuenta; no ejecutar la consulta antes de que exista la cuenta y se confirme el correo.
+4. Cerrar sesión y volver a entrar para renovar JWT con rol. Verificar seguridad y permisos por rol.
+No habilitar sign-up público ni introducir una contraseña administrativa en el repositorio.
