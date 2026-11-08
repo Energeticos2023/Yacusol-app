@@ -366,8 +366,16 @@ function refreshUploadEquipmentPicker(){
  const eqs=(state.records.equipos||[]).filter(x=>x.cliente_id===cId&&x.activo!==false);
  fillSelect("upload-media-equipment",eqs,"Selecciona la terma específica","id",x=>x.modelo+" · "+x.capacidad_l+" L"+(x.serie?" · "+x.serie:""));
  $("upload-media-equipment").disabled=!cId||!eqs.length;
+ refreshUploadServicePicker();
+}
+function refreshUploadServicePicker(){
+ const eId=$("upload-media-equipment").value;
+ const visits=(state.records.mantenimientos||[]).filter(m=>m.equipo_id===eId&&m.anulado!==true);
+ fillSelect("upload-media-service",visits,"Foto de instalación o revisión general","id",m=>fmtDate(m.fecha_realizada)+" · "+(m.tipo||"Mantenimiento"));
+ $("upload-media-service").disabled=!eId;
 }
 $("upload-media-client").addEventListener("change",()=>{ $("upload-media-equipment").value="";refreshUploadEquipmentPicker(); });
+$("upload-media-equipment").addEventListener("change",refreshUploadServicePicker);
 function openTechnicalSheet(eId){
  document.querySelector('[data-tab="ficha"]').click();
  $("technical-equipment").value=eId;
@@ -382,6 +390,7 @@ $("technical-open-upload").addEventListener("click",()=>{
  $("upload-media-client").value=eq.cliente_id;
  refreshUploadEquipmentPicker();
  $("upload-media-equipment").value=eId;
+ refreshUploadServicePicker();
  $("media-form").scrollIntoView({behavior:"smooth",block:"center"});
 });
 $("technical-print").addEventListener("click",()=>{
@@ -413,7 +422,9 @@ function renderTechnicalSheet(){
   const card=el("article",null,"album-card"),preview=el("div","Preparando vista previa…","album-preview"),
    details=el("div",null,"album-details");
   details.append(el("strong",m.nombre),el("p",(TECH_CATEGORIES[m.categoria_tecnica]||"Sin clasificar")+
-   " · "+(m.fecha_captura?fmtDate(m.fecha_captura):fmtDate(m.creado_en))+" · "+(m.nota_tecnica||"Sin observaciones técnicas")));
+   " · "+(m.fecha_captura?fmtDate(m.fecha_captura):fmtDate(m.creado_en))+
+   (m.mantenimiento_id?" · Servicio: "+fmtDate((state.records.mantenimientos||[]).find(z=>z.id===m.mantenimiento_id)?.fecha_realizada):"")+
+   " · "+(m.nota_tecnica||"Sin observaciones técnicas")));
   const view=el("button","Abrir original");view.type="button";view.addEventListener("click",()=>openMedia(m));
   details.append(view);card.append(preview,details);gallery.append(card);
   // Enlace temporal por foto, con autorización de Supabase; no almacenar en caché persistente.
@@ -711,6 +722,8 @@ $("media-form").addEventListener("submit",async e=>{
  if(file.size>50*1024*1024)return say("Archivo demasiado grande (máximo 50 MB).");
  if(!d.cliente_id||!d.equipo_id)return say("Para archivo técnico selecciona un cliente y su terma específica.");
  if(!(state.records.equipos||[]).some(x=>x.id===d.equipo_id&&x.cliente_id===d.cliente_id&&x.activo!==false))return say("La terma no pertenece al cliente seleccionado o no está activa.");
+ if(d.mantenimiento_id&&!(state.records.mantenimientos||[]).some(m=>m.id===d.mantenimiento_id&&m.equipo_id===d.equipo_id&&m.anulado!==true))
+   return say("El mantenimiento seleccionado no corresponde al equipo o está anulado.");
  if(d.fecha_captura&&d.fecha_captura>localToday())return say("La fecha de captura no puede ser futura.");
  if(!d.derechos_confirmados)return say("Debes confirmar derechos sobre el material.");
  if(d.permiso_publicitario&&!d.evidencia_permiso?.trim())return say("Registra una referencia verificable del permiso de publicidad.");
@@ -721,7 +734,7 @@ $("media-form").addEventListener("submit",async e=>{
   const name=state.user.id+"/"+crypto.randomUUID()+"."+ext;
   await api("/storage/v1/object/yacusol-media/"+name,{method:"POST",body:file,headers:{"Content-Type":file.type,"x-upsert":"false","cache-control":"3600"}});
   try {
-   await insert("media_assets",{bucket_key:name,nombre:d.nombre.trim(),tipo:file.type.startsWith("video")?"video":"foto",etapa_obra:d.etapa_obra,zona:d.zona||null,derechos_confirmados:true,permiso_publicitario:!!d.permiso_publicitario,evidencia_permiso:d.evidencia_permiso||null,cliente_id:d.cliente_id,equipo_id:d.equipo_id,categoria_tecnica:d.categoria_tecnica||"sin_clasificar",nota_tecnica:d.nota_tecnica||null,fecha_captura:d.fecha_captura||null,sha256_hex:hash});
+   await insert("media_assets",{bucket_key:name,nombre:d.nombre.trim(),tipo:file.type.startsWith("video")?"video":"foto",etapa_obra:d.etapa_obra,zona:d.zona||null,derechos_confirmados:true,permiso_publicitario:!!d.permiso_publicitario,evidencia_permiso:d.evidencia_permiso||null,cliente_id:d.cliente_id,equipo_id:d.equipo_id,mantenimiento_id:d.mantenimiento_id||null,categoria_tecnica:d.categoria_tecnica||"sin_clasificar",nota_tecnica:d.nota_tecnica||null,fecha_captura:d.fecha_captura||null,sha256_hex:hash});
   } catch (dbError){
    throw new Error("El archivo se subió, pero su ficha no se guardó. Contacta al administrador con la ruta "+name+". Detalle: "+dbError.message);
   }
