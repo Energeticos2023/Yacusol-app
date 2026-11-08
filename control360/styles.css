@@ -20,3 +20,15 @@
 .album-details p{font-size:11px;color:#78889b;line-height:1.45;margin:0;overflow-wrap:anywhere}
 .album-details button{margin-top:auto;border:1px solid #c9d6e4;border-radius:8px;background:#fff;color:#0c2340;padding:9px 11px;font-weight:700;font-size:11px}
 @media(max-width:520px){.album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.album-preview{height:130px}.album-details{padding:10px}.album-filter{display:grid;justify-content:stretch}.album-filter select{width:100%}}
+
+/* Posventa: contactos privados y acciones de registro */
+.phone-display{font-weight:700;color:#061c3a!important;font-size:13px!important}
+.maintenance-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.maintenance-actions button,.contact-action{border:1px solid #c9d6e4;border-radius:8px;background:#fff;color:#0c2340;font-weight:700;font-size:12px;padding:9px 12px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:38px}
+.contact-action{background:#16315b;color:#fff;border-color:#16315b}
+.contact-action.whatsapp{background:#25d366;border-color:#25d366;color:#061c3a}
+.maintenance-actions button:hover,.contact-action:hover{filter:brightness(.93)}
+#equipment-list .record{padding:17px}
+#equipment-list .record p{line-height:1.55}
+#equipment-edit-form,#maintenance-edit-form{background:#f3f7fc;border:1px solid #c9d6e4;padding:17px;border-radius:12px}
+@media(max-width:560px){.maintenance-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.maintenance-actions>*{width:100%}}
