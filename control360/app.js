@@ -343,6 +343,13 @@ function renderCustomerDirectory(customers,equipment){
    const edit=el("button","Editar datos del cliente");
    edit.addEventListener("click",()=>startEditCustomer(c));
    item.append(edit);
+   const open=el("button","Registrar o consultar terma");
+   open.addEventListener("click",()=>{
+     document.querySelector('[data-tab="ventas"]').click();
+     $("equipment-customer").value=c.id;
+     $("equipment-form").scrollIntoView({behavior:"smooth",block:"center"});
+   });
+   item.append(open);
   }
  }
  if(!filtered.length)empty(pane,q?"No se encontraron clientes con ese criterio.":"Aún no se han registrado clientes.");
@@ -380,8 +387,6 @@ $("edit-customer-form").addEventListener("submit",async e=>{
 });
 
 function renderSalesAndCustomers(customers,sales,quotes,equipment){
- const list=$("customer-list");list.replaceChildren();
- for(const c of customers.slice(0,30))recordLine(list,c.nombre,(c.zona||"Sin distrito")+" · "+(c.telefono||"Sin teléfono"));
  fillSelect("sale-customer",customers,"Selecciona cliente","id",x=>x.nombre);
  fillSelect("equipment-customer",customers,"Selecciona cliente","id",x=>x.nombre);
  fillSelect("sale-quote",quotes,"Sin cotización asociada","id",x=>x.modelo+" · "+money(x.precio_total),x=>x.estado==="aceptada");
