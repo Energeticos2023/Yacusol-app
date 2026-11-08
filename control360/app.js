@@ -162,7 +162,7 @@ function recordLine(container,title,subtitle,badge,mode){
 function renderAll(){
  const ps=state.records.prospectos||[],qu=state.records.cotizaciones||[],vs=state.records.ventas||[],eq=state.records.equipos||[],media=state.records.media_assets||[],customers=state.records.clientes||[];
  $("kpi-clientes").textContent=count("clientes");
- $("kpi-instalaciones").textContent=state.records.equipos===null?"—":String(eq.filter(x=>Boolean(x.instalado_el)).length);
+ $("kpi-instalaciones").textContent=state.records.equipos===null?"—":String(eq.filter(x=>x.activo!==false&&Boolean(x.instalado_el)).length);
  $("kpi-prospectos").textContent=count("prospectos");
  $("kpi-cotizaciones").textContent=state.records.cotizaciones===null?"—":String(qu.filter(x=>["enviada","aceptada"].includes(x.estado)).length);
  $("kpi-ventas").textContent=state.records.ventas===null?"—":String(vs.filter(v=>v.estado==="confirmada").length);
@@ -178,7 +178,7 @@ function renderAll(){
  const pri=$("priorities");pri.replaceChildren();
  const todo=ps.filter(x=>x.etapa!=="ganado"&&x.etapa!=="perdido").sort((a,b)=>String(a.siguiente_contacto||a.creado_en).localeCompare(String(b.siguiente_contacto||b.creado_en))).slice(0,4);
  for(const p of todo)recordLine(pri,p.nombre,(p.distrito||"Distrito pendiente")+" · "+p.etapa,"Seguimiento");
- if(due.length)recordLine(pri,"Revisiones de mantenimiento",due.filter(x=>x.days<=30).length+" equipos próximos o vencidos","Posventa","warning");
+ if(due.some(x=>x.days<=30))recordLine(pri,"Revisiones de mantenimiento",due.filter(x=>x.days<=30).length+" equipos próximos o vencidos","Posventa","warning");
  if(!pri.children.length)pri.append(el("p","Sin acciones registradas.","muted"));
  const pl=$("prospect-list");pl.replaceChildren();
  for(const p of ps.slice(0,80)){
@@ -216,15 +216,8 @@ function renderAll(){
  renderCustomerDirectory(customers,eq);
  renderMedia(media);
  renderChannelPerformance(ps,qu,vs,state.records.embudo_campana);
- const ml=$("maintenance-list");ml.replaceChildren();
- for(const m of (state.records.mantenimientos||[]).slice(0,50))recordLine(ml,"Servicio "+fmtDate(m.fecha_realizada),(m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones"),"Realizado","success");
- const eql=$("equipment-list");eql.replaceChildren();
- for(const x of due.slice(0,80)){
-  const customer=customers.find(c=>c.id===x.cliente_id);
-  recordLine(eql,(customer?.nombre||"Cliente sin identificar")+" · "+x.modelo+" "+(x.capacidad_l||"")+" L","Próxima revisión: "+fmtDate(x.date)+" · "+(x.days<0?"vencido hace "+Math.abs(x.days)+" días":"en "+x.days+" días"),x.days<0?"Vencido":x.days<=30?"Próximo":"Programado",x.days<=30?"warning":"");
- }
- for(const x of eq.filter(x=>!x.instalado_el).slice(0,30))recordLine(eql,x.modelo+" "+x.capacidad_l+" L","Fecha de instalación pendiente","Pendiente","warning");
- if(state.records.equipos===null)empty(eql,"No disponible: revisa permisos o conexión.");
+ renderMaintenancePanel(customers,eq);
+
 }
 function addMonths(base,months){
  const d=new Date(base+"T12:00:00Z");
@@ -234,7 +227,7 @@ function addMonths(base,months){
  d.setUTCDate(Math.min(original,last));return d;
 }
 function dueItems(){
- const arr=state.records.equipos||[], maint=state.records.mantenimientos||[],today=new Date(localToday()+"T12:00:00Z");
+ const arr=(state.records.equipos||[]).filter(x=>x.activo!==false), maint=(state.records.mantenimientos||[]).filter(m=>m.anulado!==true),today=new Date(localToday()+"T12:00:00Z");
  return arr.map(x=>{
   const visits=maint.filter(m=>m.equipo_id===x.id).map(m=>m.fecha_realizada).filter(Boolean).sort();
   const anchor=visits.length?visits[visits.length-1]:x.instalado_el;
@@ -325,7 +318,7 @@ function renderCustomerDirectory(customers,equipment){
  const filtered=customers.filter(c=>([c.nombre,c.zona,c.telefono].filter(Boolean).join(" ")).toLocaleLowerCase("es").includes(q));
  $("client-total-label").textContent=customers.length+" "+(customers.length===1?"cliente":"clientes");
  for(const c of filtered.slice(0,150)){
-  const owned=equipment.filter(e=>e.cliente_id===c.id);
+  const owned=equipment.filter(e=>e.cliente_id===c.id&&e.activo!==false);
   const item=recordLine(pane,c.nombre,(c.zona||"Distrito pendiente")+(c.telefono?" · Teléfono registrado":" · Sin teléfono"),owned.length+" "+(owned.length===1?"terma":"termas"),owned.length?"success":"warning");
   const next=customerNextService(c.id,equipment);
   for(const eq of owned){
@@ -391,7 +384,7 @@ function renderSalesAndCustomers(customers,sales,quotes,equipment){
  fillSelect("equipment-customer",customers,"Selecciona cliente","id",x=>x.nombre);
  fillSelect("sale-quote",quotes,"Sin cotización asociada","id",x=>x.modelo+" · "+money(x.precio_total),x=>x.estado==="aceptada");
  fillSelect("equipment-sale",sales,"Sin venta vinculada","id",x=>(x.referencia||x.id.slice(0,8))+" · "+money(x.monto_total),x=>x.estado==="confirmada");
- fillSelect("maintenance-equipment",equipment,"Selecciona equipo","id",x=>x.modelo+" "+x.capacidad_l+" L · "+(x.serie||x.id.slice(0,8)));
+ fillSelect("maintenance-equipment",equipment,"Selecciona equipo","id",x=>((state.records.clientes||[]).find(c=>c.id===x.cliente_id)?.nombre||"Cliente sin identificar")+" · "+x.modelo+" "+x.capacidad_l+" L",x=>x.activo!==false);
  const target=$("sales-list");target.replaceChildren();
  for(const v of sales.slice(0,80)){
   const owner=customers.find(c=>c.id===v.cliente_id);
