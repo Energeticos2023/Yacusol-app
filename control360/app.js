@@ -347,6 +347,117 @@ async function annulMaintenance(m){
  }catch(err){showErr(err,"Anular mantenimiento")}
 }
 
+
+const TECH_CATEGORIES={
+ sin_clasificar:"Sin clasificar",vista_general:"Vista general",acceso:"Acceso",estructura:"Estructura y anclajes",
+ hidraulica:"Hidráulica",electrica:"Electricidad",termotanque_tubos:"Tanque y tubos",antes_servicio:"Antes",
+ durante_servicio:"Durante",despues_servicio:"Después",otra:"Otra"
+};
+function optionSelect(items,initialLabel){
+ const select=el("select"),blank=el("option",initialLabel);blank.value="";select.append(blank);
+ for(const [value,label] of items){const o=el("option",label);o.value=value;select.append(o)}
+ return select;
+}
+function refreshUploadEquipmentPicker(){
+ const cId=$("upload-media-client").value;
+ const eqs=(state.records.equipos||[]).filter(x=>x.cliente_id===cId&&x.activo!==false);
+ fillSelect("upload-media-equipment",eqs,"Selecciona la terma específica","id",x=>x.modelo+" · "+x.capacidad_l+" L"+(x.serie?" · "+x.serie:""));
+ $("upload-media-equipment").disabled=!cId||!eqs.length;
+}
+$("upload-media-client").addEventListener("change",()=>{ $("upload-media-equipment").value="";refreshUploadEquipmentPicker(); });
+function openTechnicalSheet(eId){
+ document.querySelector('[data-tab="ficha"]').click();
+ $("technical-equipment").value=eId;
+ renderTechnicalSheet();
+ $("technical-equipment").scrollIntoView({behavior:"smooth",block:"center"});
+}
+$("technical-equipment").addEventListener("change",renderTechnicalSheet);
+$("technical-open-upload").addEventListener("click",()=>{
+ const eId=$("technical-equipment").value,eq=(state.records.equipos||[]).find(x=>x.id===eId);
+ if(!eq)return say("Primero selecciona un equipo.");
+ document.querySelector('[data-tab="media"]').click();
+ $("upload-media-client").value=eq.cliente_id;
+ refreshUploadEquipmentPicker();
+ $("upload-media-equipment").value=eId;
+ $("media-form").scrollIntoView({behavior:"smooth",block:"center"});
+});
+$("technical-print").addEventListener("click",()=>{
+ if(!$("technical-equipment").value)return say("Elige una terma antes de imprimir la ficha.");
+ window.print();
+});
+function renderTechnicalSheet(){
+ const eId=$("technical-equipment").value;
+ const eq=(state.records.equipos||[]).find(x=>x.id===eId);
+ const summary=$("technical-equipment-summary"),gallery=$("technical-gallery"),count=$("technical-media-count"),form=$("preparation-form");
+ gallery.replaceChildren();
+ state.gallerySequence++;
+ summary.replaceChildren();
+ if(!eq){
+  summary.append(el("p","Selecciona una terma para consultar su álbum y preparación."));
+  count.textContent="0 archivos";
+  form.reset();form.hidden=true;return;
+ }
+ form.hidden=false;
+ const customer=(state.records.clientes||[]).find(c=>c.id===eq.cliente_id);
+ const title=el("strong",(customer?.nombre||"Cliente no disponible")+" · "+eq.modelo+" · "+eq.capacidad_l+" L");
+ summary.append(title,el("p","Instalación: "+fmtDate(eq.instalado_el)+" · Zona: "+(customer?.zona||"Por confirmar")+
+  " · Próximo mantenimiento: "+(dueItems().find(d=>d.id===eq.id)?fmtDate(dueItems().find(d=>d.id===eq.id).date):"No calculado")));
+ if(customer)phoneActions(summary,customer);
+ const assets=(state.records.media_assets||[]).filter(m=>m.equipo_id===eq.id&&m.cliente_id===eq.cliente_id);
+ count.textContent=assets.length+" "+(assets.length===1?"archivo":"archivos");
+ if(!assets.length)empty(gallery,"Sin fotografías asociadas a esta terma. Clasifica los originales existentes en «Mi álbum».");
+ for(const m of assets.slice(0,120)){
+  const card=el("article",null,"album-card"),preview=el("div","Preparando vista previa…","album-preview"),
+   details=el("div",null,"album-details");
+  details.append(el("strong",m.nombre),el("p",(TECH_CATEGORIES[m.categoria_tecnica]||"Sin clasificar")+
+   " · "+(m.fecha_captura?fmtDate(m.fecha_captura):fmtDate(m.creado_en))+" · "+(m.nota_tecnica||"Sin observaciones técnicas")));
+  const view=el("button","Abrir original");view.type="button";view.addEventListener("click",()=>openMedia(m));
+  details.append(view);card.append(preview,details);gallery.append(card);
+  // Enlace temporal por foto, con autorización de Supabase; no almacenar en caché persistente.
+  signedLink(m.bucket_key).then(url=>{
+   if($("technical-equipment").value!==eq.id || !gallery.contains(card))return;
+   const media=el(m.tipo==="video"?"video":"img");
+   media.className="album-image";
+   if(m.tipo==="video"){media.preload="metadata";media.muted=true;media.playsInline=true;}
+   else{media.alt=m.nombre;media.loading="lazy";media.decoding="async";}
+   media.referrerPolicy="no-referrer";media.src=url;
+   preview.replaceChildren(media);
+  }).catch(()=>preview.replaceChildren(el("p","No disponible. Comprueba permisos.","muted small")));
+ }
+ const record=(state.records.preparacion_visitas||[]).find(p=>p.equipo_id===eq.id);
+ form.reset();
+ for(const k of ["referencia_acceso","tipo_acceso","altura_aprox_m","espacio_trabajo","riesgos_observados",
+  "herramientas_prever","repuestos_prever","observaciones","nivel_verificacion"]){
+  const input=form.elements.namedItem(k);
+  if(input)input.value=record?.[k]??(input.tagName==="SELECT"?input.options[0].value:"");
+ }
+ const admin=state.role==="admin";
+ form.querySelectorAll("input,select,textarea,button").forEach(x=>{x.disabled=!admin;});
+ $("preparation-save").textContent=admin?"Guardar preparación técnica":"Solo lectura: el administrador registra las condiciones";
+}
+$("preparation-form").addEventListener("submit",async ev=>{
+ ev.preventDefault();
+ if(state.role!=="admin")return say("Solo administración puede aprobar o editar la preparación técnica.");
+ const eId=$("technical-equipment").value,eq=(state.records.equipos||[]).find(x=>x.id===eId);
+ if(!eq)return say("Primero selecciona una terma.");
+ const d=Object.fromEntries(new FormData(ev.target));
+ if(d.nivel_verificacion==="verificado_presencial"&&!window.confirm("¿Estas condiciones han sido inspeccionadas presencialmente por una persona competente?"))return;
+ if(!window.confirm("¿Guardar este reporte como observación técnica? No sustituye evaluación de seguridad en sitio."))return;
+ const payload={
+ referencia_acceso:d.referencia_acceso||null,tipo_acceso:d.tipo_acceso,
+ altura_aprox_m:d.altura_aprox_m?Number(d.altura_aprox_m):null,espacio_trabajo:d.espacio_trabajo,
+ riesgos_observados:d.riesgos_observados||null,herramientas_prever:d.herramientas_prever||null,
+ repuestos_prever:d.repuestos_prever||null,observaciones:d.observaciones||null,
+ nivel_verificacion:d.nivel_verificacion,actualizado_por:state.user.id,actualizado_en:new Date().toISOString()
+ };
+ try{
+  const old=(state.records.preparacion_visitas||[]).find(x=>x.equipo_id===eId);
+  if(old)await patchRecord("preparacion_visitas",old.id,payload);
+  else await insert("preparacion_visitas",{...payload,equipo_id:eId});
+  await refresh();say("Preparación técnica guardada para la terma seleccionada.");
+ }catch(err){showErr(err,"Preparación técnica")}
+});
+
 function addMonths(base,months){
  const d=new Date(base+"T12:00:00Z");
  if(Number.isNaN(d.getTime()))return null;
