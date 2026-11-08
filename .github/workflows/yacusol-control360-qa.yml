@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'control360/**'
+      - 'index.html'
+      - 'comercial/red-comercial.js'
+      - 'asistente/**'
       - '.github/workflows/yacusol-control360-qa.yml'
       - 'control360/catalogo-consistencia.mjs'
   push:
@@ -21,6 +24,8 @@ jobs:
           node-version: '22'
       - name: Revisión estática
         run: node control360/qa-static.mjs
+      - name: Contacto nuevo y continuidad
+        run: node control360/qa-contacto.mjs
       - name: Obtener catálogo oficial de YACUSOL (público)
         uses: actions/checkout@v4
         with:

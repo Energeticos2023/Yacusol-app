@@ -704,7 +704,7 @@ function previewQuotation(q){
  head.append(el("h2",q.precio_total?"COTIZACIÓN COMERCIAL":"SOLICITUD DE COTIZACIÓN · NO EMITIR COMO OFERTA"));
  head.append(el("p",q.emisor_legal||"Emisor legal por definir"));
  head.append(el("p",q.ruc_emisor?"RUC "+q.ruc_emisor:"RUC por definir"));
- head.append(el("p","Contacto comercial: 942 899 919"));
+ head.append(el("p","Contacto YACUSOL: 983 926 721 · Atención técnica: 942 899 919"));
  root.append(head);
  const meta=el("div",null,"quote-meta");
  for(const pair of [
@@ -745,7 +745,7 @@ function previewQuotation(q){
  ]));
  root.append(el("p","Atentamente,"));
  root.append(el("p",q.emisor_legal||"Emisor por definir"));
- root.append(el("p","ENERGÉTICOS · YACUSOL · Atención comercial: 942 899 919"));
+ root.append(el("p","ENERGÉTICOS · YACUSOL · Cotizaciones: 983 926 721 · Técnico: 942 899 919"));
  const actions=el("div",null,"quote-preview-actions");
  const print=el("button","Imprimir / Guardar PDF");print.type="button";
  print.addEventListener("click",()=>{document.body.classList.add("print-quote");window.print();});
