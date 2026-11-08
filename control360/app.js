@@ -574,7 +574,7 @@ function quoteContact(q){
  const prospect=(state.records.prospectos||[]).find(p=>p.id===q.prospecto_id);
  return {name:customer?.nombre||prospect?.nombre||"",phone:customer?.telefono||prospect?.telefono||"",location:customer?.zona||prospect?.distrito||""};
 }
-function formatQuoteId(q){return (q.referencia||"BORRADOR · "+String(q.id||"").slice(0,8).toUpperCase());}
+function formatQuoteId(q){return (q.referencia||(q.estado==="borrador"?"BORRADOR · ":"REFERENCIA INTERNA · ")+String(q.id||"").slice(0,8).toUpperCase());}
 function quoteExtras(q){
  return Array.isArray(q.adicionales)?q.adicionales.filter(x=>x&&x.nombre&&Number.isFinite(Number(x.precio))):[];
 }
@@ -753,7 +753,7 @@ async function patchRecord(table,id,changes){
 }
 async function updateQuoteStatus(quote,status){
  if(!["admin","ventas"].includes(state.role))return;
- if(status==="enviada"&&(!quote.precio_total||quote.precio_total<=0))return say("La cotización necesita precio positivo y condiciones comerciales verificadas.");
+ if(status==="enviada"&&(!quote.precio_total||quote.precio_total<=0||!quote.emisor_legal||!quote.ruc_emisor||!quote.valido_hasta))return say("Para confirmar el envío se requiere emisor legal, precio positivo y vigencia definida.");
  const confirmed=window.confirm(status==="enviada"?"Confirma que la cotización se envió realmente al cliente, fuera de la aplicación.":"Confirma que el cliente aceptó explícitamente la propuesta.");
  if(!confirmed)return;
  try{
