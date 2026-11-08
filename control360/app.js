@@ -3,7 +3,7 @@
 const API = "https://kdlthtyxsmcehxwgjkrn.supabase.co";
 const API_KEY = "sb_publishable_76SxjVx0QhDPpb99S630Wg_7LHHrJFM";
 const ROLES = ["admin","ventas","tecnico"];
-const state = { token:null, role:null, user:null, tab:"inicio", records:{}, errors:{}, albumPreviews:new Map(), gallerySequence:0 };
+const state = { token:null, role:null, user:null, tab:"inicio", records:{}, errors:{}, albumPreviews:new Map(), gallerySequence:0, sessionEpoch:0 };
 const $ = (id) => document.getElementById(id);
 const elems = { login:$("login"),app:$("app"),message:$("global-message") };
 
@@ -72,32 +72,68 @@ async function refreshSession(){
  sessionStorage.setItem("yacusol_refresh",data.refresh_token);
  state.token=data.access_token;return data.access_token;
 }
-async function list(table,limit=250){
- return api("/rest/v1/"+encodeURIComponent(table)+"?select=*&order=creado_en.desc&limit="+limit);
+// Paginación explícita: no ocultar registros superiores a 250. Un conjunto
+// extraordinario de más de 10 000 filas exige filtros de servidor antes de mostrar KPIs.
+async function listPages(table,order){
+ const batch=500,maxPages=20,all=[];
+ for(let page=0;page<maxPages;page++){
+  const path="/rest/v1/"+encodeURIComponent(table)+"?select=*&order="+encodeURIComponent(order)+
+   "&limit="+batch+"&offset="+(page*batch);
+  const rows=await api(path);
+  if(!Array.isArray(rows))throw new Error("Respuesta incompleta al leer "+table);
+  all.push(...rows);
+  if(rows.length<batch)return all;
+ }
+ throw new Error("Hay 10 000 o más registros en "+table+". Se requiere consulta filtrada o paginación en el servidor; no se mostrarán totales incompletos.");
 }
-async function listRaw(table,order,limit=250){
- return api("/rest/v1/"+encodeURIComponent(table)+"?select=*&order="+encodeURIComponent(order)+"&limit="+limit);
-}
+async function list(table){return listPages(table,"creado_en.desc,id.asc");}
+async function listRaw(table,order){return listPages(table,order+",id.asc");}
 async function insert(table,data){
  return api("/rest/v1/"+table,{method:"POST",body:data,headers:{"Prefer":"return=representation"}});
 }
 function loginScreen(){
- state.token=null;state.role=null;state.user=null;
+ state.sessionEpoch++;
+ state.token=null;state.role=null;state.user=null;state.tab="inicio";
+ state.records={};state.errors={};
  sessionStorage.removeItem("yacusol_session");
  sessionStorage.removeItem("yacusol_refresh");
  state.albumPreviews.clear();state.gallerySequence++;
+ // Limpiar datos personales de la sesión anterior, no solo ocultar pestañas.
+ document.querySelectorAll("#app form").forEach(form=>form.reset());
+ document.querySelectorAll("#app .records, #app .album-grid, #quote-preview-content, #technical-equipment-summary")
+  .forEach(node=>node.replaceChildren());
+ document.querySelectorAll("#app .tab-pane input:not([type=hidden]), #app .tab-pane textarea")
+  .forEach(node=>{if(node.type!=="checkbox"&&node.type!=="radio")node.value="";});
+ $("user-label").textContent="";
+ const doc=$("quote-print-sheet");if(doc)doc.hidden=true;
+ document.querySelectorAll(".nav [data-tab]").forEach(tab=>tab.hidden=false);
+ const home=document.querySelector('.nav [data-tab="inicio"]');
+ if(home)home.click();
  elems.login.hidden=false;elems.app.hidden=true;$("password").value="";
 }
 async function resume(token){
+ state.sessionEpoch++;
+ const epoch=state.sessionEpoch;
  state.token=token;
  const u=await api("/auth/v1/user",{token});
+ if(state.sessionEpoch!==epoch)return;
  const role=u?.app_metadata?.yacusol_role;
  if(!ROLES.includes(role))throw new Error("Esta cuenta aún no tiene un rol autorizado. Solicita el acceso a un administrador.");
  state.user=u;state.role=role;
  $("user-label").textContent=(u.email||"Cuenta autorizada")+" · "+role;
  elems.login.hidden=true;elems.app.hidden=false;
+ // Al cambiar de usuario, restaurar pestañas antes de aplicar restricciones.
+ document.querySelectorAll(".nav [data-tab]").forEach(tab=>tab.hidden=false);
  if(role==="tecnico"){
-  for(const tab of ["prospectos","clientes","cotizaciones","ventas"])document.querySelector(`[data-tab="${tab}"]`).hidden=true;
+  for(const tab of ["prospectos","clientes","cotizaciones","ventas"]){
+   const nav=document.querySelector(`[data-tab="${tab}"]`);
+   if(nav)nav.hidden=true;
+  }
+ }
+ const active=document.querySelector(`.nav [data-tab="${state.tab}"]`);
+ if(!active||active.hidden){
+  const home=document.querySelector('.nav [data-tab="inicio"]');
+  if(home)home.click();
  }
  await refresh();
 }
@@ -130,6 +166,7 @@ $("refresh").addEventListener("click",()=>refresh());
 
 async function refresh(){
  clearNotice();
+ const epoch=state.sessionEpoch;
  // Una tabla todavía no migrada puede fallar: los demás módulos siguen visibles.
  const specs=[
   ["prospectos",()=>state.role==="tecnico"?[]:list("prospectos")],
@@ -143,6 +180,8 @@ async function refresh(){
   ["mantenimientos",()=>listRaw("mantenimientos","registrado_en.desc")]
  ];
  const results=await Promise.allSettled(specs.map(s=>s[1]()));
+ // Una carga iniciada con usuario anterior no puede repoblar el DOM tras salir.
+ if(state.sessionEpoch!==epoch||!state.role)return;
  for(let i=0;i<specs.length;i++){
   const k=specs[i][0],r=results[i];
   state.records[k]=r.status==="fulfilled"&&Array.isArray(r.value)?r.value:null;
