@@ -57,10 +57,10 @@ const editSchema=read("mantenimiento-edicion-segura.sql");
 assert(editSchema.includes("motivo_anulacion")&&editSchema.includes("motivo_archivo"), "Faltan motivos de auditoría");
 
 const map=new Map();
-const element=id=>{ if(!map.has(id))map.set(id,{id,value:"",textContent:"",hidden:false,addEventListener(){},setAttribute(){},replaceChildren(){},append(){},classList:{toggle(){}},querySelector(){return {disabled:false}},options:[],firstChild:null});return map.get(id)};
+const element=id=>{ if(!map.has(id))map.set(id,{id,value:"",textContent:"",hidden:false,addEventListener(){},setAttribute(){},replaceChildren(){},append(){},click(){},classList:{toggle(){}},querySelector(){return {disabled:false}},options:[],firstChild:null});return map.get(id)};
 const fakeDocument={getElementById:element,querySelectorAll(){return []},querySelector(){return element("q")},createElement:element};
 const fakeSession={getItem(){return null},setItem(){},removeItem(){}};
-const run=new Function("document","window","sessionStorage","fetch","File","Blob","crypto","URL",js+"\nreturn {state,localToday,addMonths,dueItems,getQuoteState,QUOTE_INCLUDED_NAVIDAD,YACUSOL_PRICES};");
+const run=new Function("document","window","sessionStorage","fetch","File","Blob","crypto","URL",js+"\nreturn {state,localToday,addMonths,dueItems,getQuoteState,QUOTE_INCLUDED_NAVIDAD,YACUSOL_PRICES,loginScreen};");
 const app=run(fakeDocument,{crypto:{subtle:{}},addEventListener(){}},fakeSession,()=>{},class{},class{},{},class{});
 assert.equal(app.addMonths("2026-01-31",1).toISOString().slice(0,10),"2026-02-28");
 assert.equal(app.addMonths("2024-01-31",1).toISOString().slice(0,10),"2024-02-29");
@@ -100,4 +100,14 @@ element("quote-manual-price").value="";
 assert.equal(app.getQuoteState().total,null,"No inventar precio TERMOINOX");
 assert(js.includes("MULTIBRAND")&&js.includes("XOLMAX")&&js.includes("LUXXOL")&&js.includes("INTIPOWER")&&js.includes("TERMOINOX"),"Faltan marcas");
 
+assert(js.includes("state.sessionEpoch!==epoch"),"Falta impedir repoblar datos de otra sesión");
+assert(js.includes("listPages(table,order)"),"Falta paginación de tablas");
+assert(!js.includes("limit=250"),"Vuelve el truncamiento silencioso de 250 filas");
+app.state.records.clientes=[{id:"sensible",nombre:"Persona de prueba"}];
+app.state.token="token-prueba";app.state.role="admin";app.state.tab="cotizaciones";
+app.loginScreen();
+assert.deepEqual(app.state.records,{},"Quedaron datos privados tras salir");
+assert.equal(app.state.role,null,"El rol anterior persiste");
+assert.equal(app.state.token,null,"El token anterior persiste");
+assert.equal(app.state.tab,"inicio","La siguiente cuenta conserva la pestaña anterior");
 console.log("Control360 QA: OK. IDs="+references.length+"; JS, DOM, marcas, seguridad e intervalos de mantenimiento.");
