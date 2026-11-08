@@ -3,7 +3,7 @@
 const API = "https://kdlthtyxsmcehxwgjkrn.supabase.co";
 const API_KEY = "sb_publishable_76SxjVx0QhDPpb99S630Wg_7LHHrJFM";
 const ROLES = ["admin","ventas","tecnico"];
-const state = { token:null, role:null, user:null, tab:"inicio", records:{}, errors:{} };
+const state = { token:null, role:null, user:null, tab:"inicio", records:{}, errors:{}, albumPreviews:new Map(), gallerySequence:0 };
 const $ = (id) => document.getElementById(id);
 const elems = { login:$("login"),app:$("app"),message:$("global-message") };
 
@@ -85,6 +85,7 @@ function loginScreen(){
  state.token=null;state.role=null;state.user=null;
  sessionStorage.removeItem("yacusol_session");
  sessionStorage.removeItem("yacusol_refresh");
+ state.albumPreviews.clear();state.gallerySequence++;
  elems.login.hidden=false;elems.app.hidden=true;$("password").value="";
 }
 async function resume(token){
@@ -96,7 +97,7 @@ async function resume(token){
  $("user-label").textContent=(u.email||"Cuenta autorizada")+" · "+role;
  elems.login.hidden=true;elems.app.hidden=false;
  if(role==="tecnico"){
-  for(const tab of ["prospectos","cotizaciones","ventas"])document.querySelector(`[data-tab="${tab}"]`).hidden=true;
+  for(const tab of ["prospectos","clientes","cotizaciones","ventas"])document.querySelector(`[data-tab="${tab}"]`).hidden=true;
  }
  await refresh();
 }
@@ -121,7 +122,7 @@ document.querySelectorAll(".nav [data-tab]").forEach(button=>button.addEventList
  state.tab=button.dataset.tab;
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b===button));
  document.querySelectorAll(".tab-pane").forEach(p=>p.hidden=p.id!=="tab-"+state.tab);
- const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Fotos y videos",mantenimiento:"Mantenimiento",campanas:"Campañas"};
+ const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",clientes:"Mis clientes e instalaciones",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Mi álbum de fotos y videos",mantenimiento:"Mantenimiento",campanas:"Campañas"};
  $("page-heading").textContent=titles[state.tab];
  clearNotice();
 }));
@@ -160,6 +161,8 @@ function recordLine(container,title,subtitle,badge,mode){
 }
 function renderAll(){
  const ps=state.records.prospectos||[],qu=state.records.cotizaciones||[],vs=state.records.ventas||[],eq=state.records.equipos||[],media=state.records.media_assets||[],customers=state.records.clientes||[];
+ $("kpi-clientes").textContent=count("clientes");
+ $("kpi-instalaciones").textContent=state.records.equipos===null?"—":String(eq.filter(x=>Boolean(x.instalado_el)).length);
  $("kpi-prospectos").textContent=count("prospectos");
  $("kpi-cotizaciones").textContent=state.records.cotizaciones===null?"—":String(qu.filter(x=>["enviada","aceptada"].includes(x.estado)).length);
  $("kpi-ventas").textContent=state.records.ventas===null?"—":String(vs.filter(v=>v.estado==="confirmada").length);
@@ -208,13 +211,18 @@ function renderAll(){
  select.firstChild.value="";
  for(const p of ps){const option=el("option",p.nombre+" · "+(p.distrito||"" ));option.value=p.id;select.append(option)}
  if([...select.options].some(o=>o.value===current))select.value=current;
- renderSalesAndCustomers(customers,vs,qu,eq);
+  renderSalesAndCustomers(customers,vs,qu,eq);
+ fillSelect("upload-media-client",customers,"Sin cliente asociado","id",c=>c.nombre+" · "+(c.zona||""));
+ renderCustomerDirectory(customers,eq);
  renderMedia(media);
  renderChannelPerformance(ps,qu,vs,state.records.embudo_campana);
  const ml=$("maintenance-list");ml.replaceChildren();
  for(const m of (state.records.mantenimientos||[]).slice(0,50))recordLine(ml,"Servicio "+fmtDate(m.fecha_realizada),(m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones"),"Realizado","success");
  const eql=$("equipment-list");eql.replaceChildren();
- for(const x of due.slice(0,80))recordLine(eql,x.modelo+" "+(x.capacidad_l||"")+" L","Próxima revisión: "+fmtDate(x.date)+" · "+x.days+" días",x.days<0?"Vencido":x.days<=30?"Próximo":"Programado",x.days<=30?"warning":"");
+ for(const x of due.slice(0,80)){
+  const customer=customers.find(c=>c.id===x.cliente_id);
+  recordLine(eql,(customer?.nombre||"Cliente sin identificar")+" · "+x.modelo+" "+(x.capacidad_l||"")+" L","Próxima revisión: "+fmtDate(x.date)+" · "+(x.days<0?"vencido hace "+Math.abs(x.days)+" días":"en "+x.days+" días"),x.days<0?"Vencido":x.days<=30?"Próximo":"Programado",x.days<=30?"warning":"");
+ }
  for(const x of eq.filter(x=>!x.instalado_el).slice(0,30))recordLine(eql,x.modelo+" "+x.capacidad_l+" L","Fecha de instalación pendiente","Pendiente","warning");
  if(state.records.equipos===null)empty(eql,"No disponible: revisa permisos o conexión.");
 }
@@ -232,7 +240,7 @@ function dueItems(){
   const anchor=visits.length?visits[visits.length-1]:x.instalado_el;
   if(!anchor)return null;
   const when=addMonths(anchor,Number(x.intervalo_meses||12));if(!when)return null;
-  return {modelo:x.modelo,capacidad_l:x.capacidad_l,date:when.toISOString().slice(0,10),days:Math.round((when-today)/86400000)};
+  return {id:x.id,cliente_id:x.cliente_id,modelo:x.modelo,capacidad_l:x.capacidad_l,date:when.toISOString().slice(0,10),days:Math.round((when-today)/86400000)};
  }).filter(Boolean).sort((a,b)=>a.days-b.days);
 }
 $("prospect-form").addEventListener("submit",async e=>{
@@ -300,9 +308,85 @@ function fillSelect(id,items,placeholder,valueKey,labelFn,filterFn=()=>true){
  }
  if(Array.from(select.options).some(o=>o.value===current))select.value=current;
 }
+
+function customerNextService(customerId,equipment){
+ const matches=dueItems().filter(d=>d.cliente_id===customerId);
+ const pending=equipment.filter(x=>x.cliente_id===customerId&&!x.instalado_el);
+ if(matches.length){
+  const closest=matches[0];
+  return {text:"Próxima revisión: "+fmtDate(closest.date)+(closest.days<0?" · vencida hace "+Math.abs(closest.days)+" días":closest.days===0?" · vence hoy":" · faltan "+closest.days+" días"),due:closest.days};
+ }
+ return pending.length?{text:"Terma registrada sin fecha de instalación",due:null}:null;
+}
+function renderCustomerDirectory(customers,equipment){
+ const q=($("client-search").value||"").trim().toLocaleLowerCase("es");
+ const pane=$("client-directory");
+ pane.replaceChildren();
+ const filtered=customers.filter(c=>([c.nombre,c.zona,c.telefono].filter(Boolean).join(" ")).toLocaleLowerCase("es").includes(q));
+ $("client-total-label").textContent=customers.length+" "+(customers.length===1?"cliente":"clientes");
+ for(const c of filtered.slice(0,150)){
+  const owned=equipment.filter(e=>e.cliente_id===c.id);
+  const item=recordLine(pane,c.nombre,(c.zona||"Distrito pendiente")+(c.telefono?" · Teléfono registrado":" · Sin teléfono"),owned.length+" "+(owned.length===1?"terma":"termas"),owned.length?"success":"warning");
+  const next=customerNextService(c.id,equipment);
+  for(const eq of owned){
+   const details=el("p",(eq.modelo||"YACUSOL")+" · "+(eq.capacidad_l||"?")+" L"+(eq.serie?" · Serie: "+eq.serie:"")+" · "+(eq.instalado_el?"Instalación: "+fmtDate(eq.instalado_el):"Instalación pendiente de registrar"));
+   item.append(details);
+  }
+  if(next){
+   const label=el("p",next.text);
+   if(next.due!==null&&next.due<=30)label.classList.add("due-emphasis");
+   item.append(label);
+  }else{
+   item.append(el("p","Sin terma registrada. Para calcular mantenimiento, abre «Ventas e instalaciones» y vincula el equipo y su fecha."));
+  }
+  if(["admin","ventas"].includes(state.role)){
+   const edit=el("button","Editar datos del cliente");
+   edit.addEventListener("click",()=>startEditCustomer(c));
+   item.append(edit);
+   const open=el("button","Registrar o consultar terma");
+   open.addEventListener("click",()=>{
+     document.querySelector('[data-tab="ventas"]').click();
+     $("equipment-customer").value=c.id;
+     $("equipment-form").scrollIntoView({behavior:"smooth",block:"center"});
+   });
+   item.append(open);
+  }
+ }
+ if(!filtered.length)empty(pane,q?"No se encontraron clientes con ese criterio.":"Aún no se han registrado clientes.");
+}
+$("client-search").addEventListener("input",()=>{
+ renderCustomerDirectory(state.records.clientes||[],state.records.equipos||[]);
+});
+function startEditCustomer(customer){
+ const form=$("edit-customer-form");
+ form.elements.namedItem("id").value=customer.id;
+ form.elements.namedItem("nombre").value=customer.nombre||"";
+ form.elements.namedItem("telefono").value=customer.telefono||"";
+ form.elements.namedItem("zona").value=customer.zona||"";
+ $("customer-form").hidden=true;
+ form.hidden=false;
+ form.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function closeEditCustomer(){
+ $("edit-customer-form").reset();
+ $("edit-customer-form").hidden=true;
+ $("customer-form").hidden=false;
+}
+$("cancel-customer-edit").addEventListener("click",closeEditCustomer);
+$("edit-customer-form").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!["admin","ventas"].includes(state.role))return say("No autorizado para editar clientes.");
+ const form=e.target,d=Object.fromEntries(new FormData(form)),phone=d.telefono.replace(/[()\s-]/g,"")||null;
+ if(!d.nombre.trim())return say("Indica el nombre del cliente.");
+ try{
+  await patchRecord("clientes",d.id,{nombre:d.nombre.trim(),telefono:phone,zona:d.zona.trim()||null});
+  closeEditCustomer();
+  await refresh();
+  say("Ficha del cliente actualizada correctamente.");
+ }catch(err){showErr(err,"Edición de cliente")}
+});
+
 function renderSalesAndCustomers(customers,sales,quotes,equipment){
- const list=$("customer-list");list.replaceChildren();
- for(const c of customers.slice(0,30))recordLine(list,c.nombre,(c.zona||"Sin distrito")+" · "+(c.telefono||"Sin teléfono"));
  fillSelect("sale-customer",customers,"Selecciona cliente","id",x=>x.nombre);
  fillSelect("equipment-customer",customers,"Selecciona cliente","id",x=>x.nombre);
  fillSelect("sale-quote",quotes,"Sin cotización asociada","id",x=>x.modelo+" · "+money(x.precio_total),x=>x.estado==="aceptada");
@@ -395,7 +479,7 @@ $("media-form").addEventListener("submit",async e=>{
   const name=state.user.id+"/"+crypto.randomUUID()+"."+ext;
   await api("/storage/v1/object/yacusol-media/"+name,{method:"POST",body:file,headers:{"Content-Type":file.type,"x-upsert":"false","cache-control":"3600"}});
   try {
-   await insert("media_assets",{bucket_key:name,nombre:d.nombre.trim(),tipo:file.type.startsWith("video")?"video":"foto",etapa_obra:d.etapa_obra,zona:d.zona||null,derechos_confirmados:true,permiso_publicitario:!!d.permiso_publicitario,evidencia_permiso:d.evidencia_permiso||null,sha256_hex:hash});
+   await insert("media_assets",{bucket_key:name,nombre:d.nombre.trim(),tipo:file.type.startsWith("video")?"video":"foto",etapa_obra:d.etapa_obra,zona:d.zona||null,derechos_confirmados:true,permiso_publicitario:!!d.permiso_publicitario,evidencia_permiso:d.evidencia_permiso||null,cliente_id:d.cliente_id||null,sha256_hex:hash});
   } catch (dbError){
    throw new Error("El archivo se subió, pero su ficha no se guardó. Contacta al administrador con la ruta "+name+". Detalle: "+dbError.message);
   }
@@ -427,20 +511,109 @@ async function approveMedia(m){
   await refresh();say("Medio aprobado para uso publicitario. El agente IA aún necesita acceso autorizado.");
  }catch(e){showErr(e,"Aprobación")}
 }
+function mediaDescription(m){
+ const customer=(state.records.clientes||[]).find(c=>c.id===m.cliente_id);
+ return (m.etapa_obra||"Por verificar")+" · "+(m.zona||"Sin zona")+" · "+(customer?.nombre||"Sin cliente asociado")+" · "+fmtDate(m.creado_en);
+}
 function renderMedia(arr){
- const target=$("media-list"),ok=$("approved-media");target.replaceChildren();ok.replaceChildren();
+ const target=$("media-list"),ok=$("approved-media");
+ target.replaceChildren();ok.replaceChildren();
  for(const m of arr.slice(0,120)){
-  const title=(m.tipo==="video"?"🎬 ":"📷 ")+m.nombre;
-  const description=(m.etapa_obra||"Por verificar")+" · "+(m.zona||"Sin zona")+" · "+fmtDate(m.creado_en);
+  const title=(m.tipo==="video"?"Video: ":"Foto: ")+m.nombre;
+  const description=mediaDescription(m);
   const item=recordLine(target,title,description,m.aprobado_marketing?"Aprobado":"Privado",m.aprobado_marketing?"success":"warning");
-  const open=el("button","Ver original (enlace temporal)");open.addEventListener("click",()=>openMedia(m));item.append(open);
+  const open=el("button","Abrir archivo original");
+  open.addEventListener("click",()=>openMedia(m));
+  item.append(open);
+  if(state.role==="admin"){
+   const picker=el("select");
+   picker.setAttribute("aria-label","Vincular "+m.nombre+" a un cliente");
+   const emptyOption=el("option","Sin cliente asociado");emptyOption.value="";picker.append(emptyOption);
+   for(const customer of (state.records.clientes||[])){
+    const option=el("option",customer.nombre+" · "+(customer.zona||""));
+    option.value=customer.id;picker.append(option);
+   }
+   picker.value=m.cliente_id||"";
+   const link=el("button","Guardar vínculo con cliente");
+   link.addEventListener("click",async()=>{
+    if(picker.value===(m.cliente_id||""))return say("Este material ya está vinculado al cliente seleccionado.");
+    try{
+     await patchRecord("media_assets",m.id,{cliente_id:picker.value||null});
+     await refresh();say("Fotografía o video vinculado al cliente correctamente.");
+    }catch(e){showErr(e,"Vinculación de medio")}
+   });
+   item.append(picker,link);
+  }
   if(state.role==="admin"&&!m.aprobado_marketing){
-   const approve=el("button","Verificar y aprobar marketing");
+   const approve=el("button","Verificar y aprobar publicidad");
    approve.addEventListener("click",()=>approveMedia(m));item.append(approve);
   }
   if(m.aprobado_marketing)recordLine(ok,title,description,"Aprobado","success");
  }
+ if(!arr.length)empty(target,"Todavía no has subido fotos o videos.");
+ renderGallery(arr);
 }
+function renderGallery(arr){
+ const filter=$("album-filter").value||"todos";
+ const visible=arr.filter(m=>{
+  if(filter==="foto")return m.tipo==="foto";
+  if(filter==="video")return m.tipo==="video";
+  if(filter==="aprobados")return m.aprobado_marketing;
+  if(filter==="sinvincular")return !m.cliente_id;
+  return true;
+ });
+ const area=$("media-gallery");
+ area.replaceChildren();
+ state.gallerySequence++;
+ const current=state.gallerySequence;
+ $("album-count").textContent=visible.length+" "+(visible.length===1?"archivo":"archivos");
+ if(!visible.length){
+  empty(area,arr.length?"No hay archivos para este filtro.":"Todavía no hay material subido.");
+  return;
+ }
+ const jobs=[];
+ for(const m of visible.slice(0,120)){
+  const tile=el("article",null,"album-card");
+  const preview=el("div","Cargando vista previa privada…","album-preview");
+  const details=el("div",null,"album-details");
+  details.append(el("strong",m.nombre),el("p",mediaDescription(m)));
+  const status=el("span",m.aprobado_marketing?"Autorizado para publicidad":"Solo uso interno","pill "+(m.aprobado_marketing?"success":"warning"));
+  details.append(status);
+  const view=el("button","Abrir original");
+  view.addEventListener("click",()=>openMedia(m));
+  details.append(view);
+  tile.append(preview,details);area.append(tile);
+  jobs.push({m,preview});
+ }
+ // Solo URLs firmadas de duración breve; nunca hacer público el depósito.
+ let next=0;
+ const worker=async()=>{
+  while(next<jobs.length){
+   const task=jobs[next++];
+   try{
+    const url=await signedLink(task.m.bucket_key);
+    if(current!==state.gallerySequence)return;
+    const media=el(task.m.tipo==="video"?"video":"img");
+    media.className="album-image";
+    if(task.m.tipo==="video"){
+      media.preload="metadata";media.muted=true;media.playsInline=true;
+    }else{
+      media.alt=task.m.nombre;
+      media.loading="lazy";
+      media.decoding="async";
+    }
+    media.referrerPolicy="no-referrer";
+    media.src=url;
+    task.preview.replaceChildren(media);
+   }catch(err){
+    if(current!==state.gallerySequence)return;
+    task.preview.replaceChildren(el("p","Vista previa no disponible. Comprueba los permisos o abre el original.","muted small"));
+   }
+  }
+ };
+ Promise.allSettled(Array.from({length:Math.min(jobs.length,4)},()=>worker())).catch(()=>{});
+}
+$("album-filter").addEventListener("change",()=>renderGallery(state.records.media_assets||[]));
 (async()=>{
  const token=sessionStorage.getItem("yacusol_session");
  if(!token)return;

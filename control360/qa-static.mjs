@@ -7,13 +7,17 @@ const html=read("index.html"), js=read("app.js"), css=read("styles.css"), sql=re
 new vm.Script(js, {filename:"app.js"});
 const references=[...new Set([...js.matchAll(/\\$\\("([a-z0-9-]+)"\\)/g)].map(x=>x[1]))];
 for(const id of references) assert(html.includes('id="'+id+'"'), 'Falta ID '+id);
-for(const id of ["login-form","prospect-form","quote-form","customer-form","sale-form","equipment-form","maintenance-form","media-form","channel-performance"]) assert(html.includes('id="'+id+'"'), 'Falta interfaz '+id);
+for(const id of ["login-form","prospect-form","quote-form","customer-form","edit-customer-form","sale-form","equipment-form","maintenance-form","media-form","channel-performance","client-directory","media-gallery","client-search","album-filter","kpi-clientes","kpi-instalaciones","upload-media-client"]) assert(html.includes('id="'+id+'"'), 'Falta interfaz '+id);
 assert(html.includes('script-src \'self\''), "No se reconoce CSP restrictivo");
 assert(js.includes("sb_publishable_"), "Clave publicable no configurada");
 assert(!js.includes("service_role")&&!js.includes("sb_secret_"), "Credencial secreta en frontend");
 assert(sql.includes("enable row level security"), "Esquema sin control RLS");
 assert(sql.includes("'yacusol-media',false"), "Bucket debe ser privado");
 assert(css.includes(".funnel-meter"), "Falta estilo de embudo");
+assert(css.includes(".album-grid"), "No hay estilo de galería privada");
+assert(js.includes("renderCustomerDirectory"), "No hay directorio de clientes");
+assert(js.includes("renderGallery"), "No hay álbum visual");
+assert(js.includes("signedLink"), "La galería no utiliza URL temporal");
 const map=new Map();
 const element=id=>{ if(!map.has(id))map.set(id,{id,value:"",textContent:"",hidden:false,addEventListener(){},setAttribute(){},replaceChildren(){},append(){},classList:{toggle(){}},querySelector(){return {disabled:false}},options:[],firstChild:null});return map.get(id)};
 const fakeDocument={getElementById:element,querySelectorAll(){return []},querySelector(){return element("q")},createElement:element};
