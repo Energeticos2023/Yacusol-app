@@ -748,7 +748,7 @@ async function approveMedia(m){
 }
 function mediaDescription(m){
  const customer=(state.records.clientes||[]).find(c=>c.id===m.cliente_id);
- return (m.etapa_obra||"Por verificar")+" · "+(m.zona||"Sin zona")+" · "+(customer?.nombre||"Sin cliente asociado")+" · "+fmtDate(m.creado_en);
+ return (TECH_CATEGORIES[m.categoria_tecnica]||"Sin clasificar")+" · "+(m.etapa_obra||"Por verificar")+" · "+(m.zona||"Sin zona")+" · "+(customer?.nombre||"Sin cliente asociado")+" · "+(m.equipo_id?"Terma vinculada":"Sin terma vinculada")+" · "+fmtDate(m.creado_en);
 }
 function renderMedia(arr){
  const target=$("media-list"),ok=$("approved-media");
@@ -761,23 +761,47 @@ function renderMedia(arr){
   open.addEventListener("click",()=>openMedia(m));
   item.append(open);
   if(state.role==="admin"){
-   const picker=el("select");
-   picker.setAttribute("aria-label","Vincular "+m.nombre+" a un cliente");
-   const emptyOption=el("option","Sin cliente asociado");emptyOption.value="";picker.append(emptyOption);
-   for(const customer of (state.records.clientes||[])){
-    const option=el("option",customer.nombre+" · "+(customer.zona||""));
-    option.value=customer.id;picker.append(option);
-   }
-   picker.value=m.cliente_id||"";
-   const link=el("button","Guardar vínculo con cliente");
-   link.addEventListener("click",async()=>{
-    if(picker.value===(m.cliente_id||""))return say("Este material ya está vinculado al cliente seleccionado.");
+   const controls=el("div",null,"media-technical-fields");
+   const clients=(state.records.clientes||[]), equipment=(state.records.equipos||[]);
+   const clientPicker=optionSelect(clients.map(c=>[c.id,c.nombre+" · "+(c.zona||"")]),"Selecciona cliente");
+   const equipmentPicker=optionSelect([],"Selecciona equipo del cliente");
+   const categoryPicker=optionSelect(Object.entries(TECH_CATEGORIES),"Clasificación técnica");
+   const note=el("textarea");note.rows=2;note.maxLength=2000;
+   note.placeholder="Acceso, montaje, seguridad o detalles que el técnico necesita conocer";
+   const caption=el("span","Asignación exclusiva al cliente y la terma correcta","muted small");
+   clientPicker.setAttribute("aria-label","Cliente al que pertenece "+m.nombre);
+   equipmentPicker.setAttribute("aria-label","Terma a la que pertenece "+m.nombre);
+   categoryPicker.setAttribute("aria-label","Categoría técnica de "+m.nombre);
+   const fillEquip=()=>{
+     const cId=clientPicker.value,selected=equipmentPicker.value;
+     equipmentPicker.replaceChildren();
+     const blank=el("option","Selecciona terma");blank.value="";equipmentPicker.append(blank);
+     for(const e of equipment.filter(x=>x.cliente_id===cId)){
+      const opt=el("option",e.modelo+" · "+e.capacidad_l+" L"+(e.serie?" · "+e.serie:""));
+      opt.value=e.id;equipmentPicker.append(opt);
+     }
+     if([...equipmentPicker.options].some(x=>x.value===selected))equipmentPicker.value=selected;
+   };
+   clientPicker.value=m.cliente_id||"";
+   fillEquip();
+   equipmentPicker.value=m.equipo_id||"";
+   categoryPicker.value=m.categoria_tecnica||"sin_clasificar";
+   note.value=m.nota_tecnica||"";
+   clientPicker.addEventListener("change",()=>{equipmentPicker.value="";fillEquip();});
+   const save=el("button","Guardar asociación y clasificación técnica");save.type="button";
+   save.addEventListener("click",async()=>{
+    if(!clientPicker.value||!equipmentPicker.value)return say("Para una fotografía de instalación, elige cliente y terma específica.");
+    const match=equipment.find(x=>x.id===equipmentPicker.value&&x.cliente_id===clientPicker.value);
+    if(!match)return say("La terma seleccionada no corresponde al cliente.");
+    if(!window.confirm("¿Verificaste que esta foto realmente pertenece al cliente y a la terma indicados?"))return;
     try{
-     await patchRecord("media_assets",m.id,{cliente_id:picker.value||null});
-     await refresh();say("Fotografía o video vinculado al cliente correctamente.");
-    }catch(e){showErr(e,"Vinculación de medio")}
+     await patchRecord("media_assets",m.id,{cliente_id:clientPicker.value,equipo_id:equipmentPicker.value,
+      categoria_tecnica:categoryPicker.value||"sin_clasificar",nota_tecnica:note.value||null});
+     await refresh();say("Archivo asociado al álbum privado de la terma y clasificado.");
+    }catch(err){showErr(err,"Clasificación técnica")}
    });
-   item.append(picker,link);
+   controls.append(caption,clientPicker,equipmentPicker,categoryPicker,note,save);
+   item.append(controls);
   }
   if(state.role==="admin"&&!m.aprobado_marketing){
    const approve=el("button","Verificar y aprobar publicidad");
