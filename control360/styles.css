@@ -32,3 +32,41 @@
 #equipment-list .record p{line-height:1.55}
 #equipment-edit-form,#maintenance-edit-form{background:#f3f7fc;border:1px solid #c9d6e4;padding:17px;border-radius:12px}
 @media(max-width:560px){.maintenance-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.maintenance-actions>*{width:100%}}
+
+/* Expediente privado de cada terma y ficha de visita */
+#tab-ficha .album-card{max-width:100%}
+#technical-equipment-summary{line-height:1.65}
+#technical-equipment-summary p{margin:5px 0 0}
+#technical-gallery .album-card p{overflow-wrap:anywhere}
+#preparation-form[hidden]{display:none}
+.media-technical-fields{display:grid;gap:9px;margin-top:10px;padding:11px;border-radius:10px;background:#f3f7fc;border:1px solid #dee8f3}
+.media-technical-fields select,.media-technical-fields textarea{font-size:12px;width:100%}
+.media-technical-fields button{border:1px solid #0c2340;color:#0c2340;background:#fff;padding:9px 11px}
+.visit-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.visit-checks label{display:flex;gap:10px;align-items:start;font-size:13px;line-height:1.4}
+.visit-checks input{width:17px;height:17px;flex:0 0 auto;accent-color:#d9700a}
+#tab-ficha .two-col{align-items:start}
+@media(max-width:690px){.visit-checks{grid-template-columns:1fr}}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff;color:#0c2340;font:11pt Arial, sans-serif}
+  .sidebar,.topbar,.main>footer,.notice,.tab-pane:not(#tab-ficha),#technical-open-upload,
+  #technical-print,#preparation-save,.maintenance-actions button,.maintenance-actions a,
+  #tab-ficha .section-head p{display:none!important}
+  .app-shell{display:block!important;min-height:auto}
+  .main{padding:0!important;max-width:none!important;width:100%}
+  #tab-ficha,#tab-ficha[hidden]{display:block!important}
+  #tab-ficha .two-col{display:block}
+  #tab-ficha .panel{border:none;box-shadow:none;padding:8px 0;break-inside:avoid}
+  #tab-ficha .section-head{margin-bottom:8px}
+  #tab-ficha .section-head h2{font-size:17pt}
+  #tab-ficha .album-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #tab-ficha .album-preview{height:125px}
+  #tab-ficha .album-details{padding:6px}
+  #tab-ficha .album-details button{display:none}
+  #tab-ficha label{font-size:9pt}
+  #tab-ficha input,#tab-ficha select,#tab-ficha textarea{border:1px solid #bbc6d0;padding:5px;font:9pt Arial}
+  #tab-ficha .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  #tab-ficha .visit-checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .album-card{break-inside:avoid}
+}
