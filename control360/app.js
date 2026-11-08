@@ -402,7 +402,7 @@ function renderTechnicalSheet(){
  const eq=(state.records.equipos||[]).find(x=>x.id===eId);
  const summary=$("technical-equipment-summary"),gallery=$("technical-gallery"),count=$("technical-media-count"),form=$("preparation-form");
  gallery.replaceChildren();
- state.gallerySequence++;
+ // No invalidar las vistas previas del álbum general: usan un ciclo independiente.
  summary.replaceChildren();
  if(!eq){
   summary.append(el("p","Selecciona una terma para consultar su álbum y preparación."));
