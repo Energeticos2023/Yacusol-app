@@ -786,6 +786,7 @@ function renderMedia(arr){
    const clientPicker=optionSelect(clients.map(c=>[c.id,c.nombre+" · "+(c.zona||"")]),"Selecciona cliente");
    const equipmentPicker=optionSelect([],"Selecciona equipo del cliente");
    const categoryPicker=optionSelect(Object.entries(TECH_CATEGORIES),"Clasificación técnica");
+   const servicePicker=optionSelect([],"Sin servicio específico");
    const note=el("textarea");note.rows=2;note.maxLength=2000;
    note.placeholder="Acceso, montaje, seguridad o detalles que el técnico necesita conocer";
    const caption=el("span","Asignación exclusiva al cliente y la terma correcta","muted small");
@@ -802,25 +803,38 @@ function renderMedia(arr){
      }
      if([...equipmentPicker.options].some(x=>x.value===selected))equipmentPicker.value=selected;
    };
+   const fillServices=()=>{
+     const selected=servicePicker.value;
+     servicePicker.replaceChildren();
+     const none=el("option","Instalación / evidencia general");none.value="";servicePicker.append(none);
+     for(const visit of (state.records.mantenimientos||[]).filter(x=>x.equipo_id===equipmentPicker.value&&x.anulado!==true)){
+      const option=el("option",fmtDate(visit.fecha_realizada)+" · "+visit.tipo);
+      option.value=visit.id;servicePicker.append(option);
+     }
+     if([...servicePicker.options].some(o=>o.value===selected))servicePicker.value=selected;
+   };
    clientPicker.value=m.cliente_id||"";
    fillEquip();
    equipmentPicker.value=m.equipo_id||"";
+   fillServices();servicePicker.value=m.mantenimiento_id||"";
    categoryPicker.value=m.categoria_tecnica||"sin_clasificar";
    note.value=m.nota_tecnica||"";
-   clientPicker.addEventListener("change",()=>{equipmentPicker.value="";fillEquip();});
+   clientPicker.addEventListener("change",()=>{equipmentPicker.value="";fillEquip();servicePicker.value="";fillServices();});
+   equipmentPicker.addEventListener("change",()=>{servicePicker.value="";fillServices();});
    const save=el("button","Guardar asociación y clasificación técnica");save.type="button";
    save.addEventListener("click",async()=>{
     if(!clientPicker.value||!equipmentPicker.value)return say("Para una fotografía de instalación, elige cliente y terma específica.");
     const match=equipment.find(x=>x.id===equipmentPicker.value&&x.cliente_id===clientPicker.value);
     if(!match)return say("La terma seleccionada no corresponde al cliente.");
+    if(servicePicker.value&&!(state.records.mantenimientos||[]).some(v=>v.id===servicePicker.value&&v.equipo_id===match.id&&v.anulado!==true))return say("Servicio no corresponde a la terma.");
     if(!window.confirm("¿Verificaste que esta foto realmente pertenece al cliente y a la terma indicados?"))return;
     try{
      await patchRecord("media_assets",m.id,{cliente_id:clientPicker.value,equipo_id:equipmentPicker.value,
-      categoria_tecnica:categoryPicker.value||"sin_clasificar",nota_tecnica:note.value||null});
+      mantenimiento_id:servicePicker.value||null,categoria_tecnica:categoryPicker.value||"sin_clasificar",nota_tecnica:note.value||null});
      await refresh();say("Archivo asociado al álbum privado de la terma y clasificado.");
     }catch(err){showErr(err,"Clasificación técnica")}
    });
-   controls.append(caption,clientPicker,equipmentPicker,categoryPicker,note,save);
+   controls.append(caption,clientPicker,equipmentPicker,servicePicker,categoryPicker,note,save);
    item.append(controls);
   }
   if(state.role==="admin"&&!m.aprobado_marketing){
