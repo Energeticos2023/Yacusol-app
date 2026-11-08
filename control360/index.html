@@ -211,11 +211,52 @@
       </section>
 
       <section id="tab-mantenimiento" class="tab-pane" hidden>
-        <div class="section-head"><div><h2>Mantenimiento y posventa</h2><p>El vínculo comercial continúa después de instalar la terma.</p></div></div>
+        <div class="section-head"><div><h2>Mantenimiento y posventa</h2><p>Identifica a quién contactar, revisa los vencimientos y conserva un historial técnico verificable.</p></div></div>
         <div class="two-col">
-          <article class="panel"><h3>Equipos y próximas revisiones</h3><div id="equipment-list" class="records"></div></article>
-          <article class="panel"><h3>Registrar un mantenimiento realizado</h3><form id="maintenance-form" class="form-grid"><label class="wide">Equipo <select name="equipo_id" id="maintenance-equipment" required></select></label><label>Fecha de servicio <input type="date" name="fecha_realizada" required></label><label>Tipo <select name="tipo"><option value="preventivo">Preventivo</option><option value="correctivo">Correctivo</option></select></label><label class="wide">Observaciones <textarea name="observaciones" rows="2" maxlength="2000"></textarea></label><button class="primary wide" type="submit">Registrar mantenimiento ejecutado</button></form><h3 class="section-gap">Historial de servicios</h3><div id="maintenance-list" class="records"></div><div class="note"><strong>Recordatorios seguros</strong><p>Esta versión organiza las fechas. No envía mensajes por WhatsApp sin una integración oficial y consentimiento verificado.</p></div></article>
+          <article class="panel">
+            <div class="panel-title"><h3>Clientes y próximas revisiones</h3><span class="muted">Los contactos son privados</span></div>
+            <label class="section-gap">Ver equipos
+              <select id="maintenance-filter"><option value="activos">Activos</option><option value="proximos">Próximos 30 días y vencidos</option><option value="todos">Todos, incluidos archivados</option></select>
+            </label>
+            <div id="equipment-list" class="records section-gap"></div>
+            <p class="muted small">Llamar abre el marcador de tu dispositivo. WhatsApp abre el chat; no envía mensajes automáticamente.</p>
+          </article>
+          <article class="panel">
+            <h3>Registrar un mantenimiento realizado</h3>
+            <form id="maintenance-form" class="form-grid">
+              <label class="wide">Equipo y cliente <select name="equipo_id" id="maintenance-equipment" required></select></label>
+              <label>Fecha de servicio <input type="date" name="fecha_realizada" required></label>
+              <label>Tipo <select name="tipo"><option value="preventivo">Preventivo</option><option value="correctivo">Correctivo</option></select></label>
+              <label class="wide">Observaciones <textarea name="observaciones" rows="2" maxlength="2000"></textarea></label>
+              <button class="primary wide" type="submit">Registrar mantenimiento ejecutado</button>
+            </form>
+            <form id="maintenance-edit-form" class="form-grid section-gap" hidden>
+              <h3 class="wide">Corregir mantenimiento existente</h3>
+              <input type="hidden" name="id">
+              <label>Fecha realizada <input type="date" name="fecha_realizada" required></label>
+              <label>Tipo <select name="tipo"><option value="preventivo">Preventivo</option><option value="correctivo">Correctivo</option></select></label>
+              <label class="wide">Observaciones <textarea name="observaciones" rows="2" maxlength="2000"></textarea></label>
+              <button class="primary" type="submit">Guardar corrección</button>
+              <button class="secondary" id="maintenance-edit-cancel" type="button">Cancelar</button>
+            </form>
+            <h3 class="section-gap">Historial de servicios</h3><div id="maintenance-list" class="records"></div>
+            <div class="note"><strong>Recordatorios seguros</strong><p>Esta versión organiza las fechas. No envía mensajes por WhatsApp sin una integración oficial y consentimiento verificado. Eliminar equivale a archivar o anular conservando trazabilidad.</p></div>
+          </article>
         </div>
+        <article class="panel section-gap">
+          <h3>Editar datos de la terma</h3>
+          <form id="equipment-edit-form" class="form-grid" hidden>
+            <input type="hidden" name="id">
+            <label class="wide">Cliente asociado <select name="cliente_id" id="maintenance-edit-client" required></select></label>
+            <label>Modelo <input name="modelo" required maxlength="120" minlength="2"></label>
+            <label>Capacidad (L) <input name="capacidad_l" type="number" min="1" max="2000" required></label>
+            <label>Número de serie <input name="serie" maxlength="100"></label>
+            <label>Fecha de instalación <input name="instalado_el" type="date"></label>
+            <label class="wide">Intervalo de mantenimiento (meses) <input name="intervalo_meses" type="number" min="1" max="120" required></label>
+            <button class="primary" type="submit">Guardar edición</button><button class="secondary" id="equipment-edit-cancel" type="button">Cancelar</button>
+          </form>
+          <p class="muted" id="equipment-edit-hint">Selecciona «Editar equipo» en la lista. Solo el administrador puede modificar y archivar instalaciones.</p>
+        </article>
       </section>
 
       <section id="tab-campanas" class="tab-pane" hidden>
