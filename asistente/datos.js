@@ -4,7 +4,7 @@
    Si cambias un precio en la app, cámbialo también aquí.
    ===================================================================== */
 window.ASISTENTE_CONFIG = {
-  whatsapp: "51942899919",
+  whatsapp: "51983926721",
 
   equipos: [
     {cap:120, tubos:12, personas:"3 personas",       precio:1700, asistente:"5 L"},
