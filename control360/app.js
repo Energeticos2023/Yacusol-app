@@ -41,15 +41,34 @@ function money(v){
 }
 function numberOrNull(v){ return v?Number(v):null; }
 
-async function api(path,{method="GET",body=null,token=state.token,headers={}}={}) {
+async function api(path,{method="GET",body=null,token=state.token,headers={},retried=false}={}) {
  const h={"apikey":API_KEY,Accept:"application/json",...headers};
  if(token)h.Authorization="Bearer "+token;
  if(body!==null && !(body instanceof File) && !(body instanceof Blob))h["Content-Type"]="application/json";
- const r=await fetch(API+path,{method,headers:h,body:body===null?undefined:typeof body==="string"||body instanceof File||body instanceof Blob?body:JSON.stringify(body)});
+ let r=await fetch(API+path,{method,headers:h,body:body===null?undefined:typeof body==="string"||body instanceof File||body instanceof Blob?body:JSON.stringify(body)});
+ if(r.status===401 && token && !retried && !path.startsWith("/auth/v1/token")){
+  const fresh=await refreshSession();
+  return api(path,{method,body,token:fresh,headers,retried:true});
+ }
  const raw=await r.text();
  let data={};try{data=raw?JSON.parse(raw):{}}catch{data={message:raw.slice(0,250)}}
  if(!r.ok)throw new Error(data.msg||data.message||data.error_description||("Error de servidor "+r.status));
  return data;
+}
+async function refreshSession(){
+ const refresh=sessionStorage.getItem("yacusol_refresh");
+ if(!refresh)throw new Error("Sesión expirada. Vuelve a iniciar sesión.");
+ const r=await fetch(API+"/auth/v1/token?grant_type=refresh_token",{
+  method:"POST",
+  headers:{"apikey":API_KEY,"Content-Type":"application/json"},
+  body:JSON.stringify({refresh_token:refresh})
+ });
+ if(!r.ok)throw new Error("La sesión expiró. Inicia sesión nuevamente.");
+ const data=await r.json();
+ if(!data.access_token||!data.refresh_token)throw new Error("No fue posible renovar la sesión.");
+ sessionStorage.setItem("yacusol_session",data.access_token);
+ sessionStorage.setItem("yacusol_refresh",data.refresh_token);
+ state.token=data.access_token;return data.access_token;
 }
 async function list(table,limit=250){
  return api("/rest/v1/"+encodeURIComponent(table)+"?select=*&order=creado_en.desc&limit="+limit);
@@ -63,6 +82,7 @@ async function insert(table,data){
 function loginScreen(){
  state.token=null;state.role=null;state.user=null;
  sessionStorage.removeItem("yacusol_session");
+ sessionStorage.removeItem("yacusol_refresh");
  elems.login.hidden=false;elems.app.hidden=true;$("password").value="";
 }
 async function resume(token){
@@ -74,8 +94,7 @@ async function resume(token){
  $("user-label").textContent=(u.email||"Cuenta autorizada")+" · "+role;
  elems.login.hidden=true;elems.app.hidden=false;
  if(role==="tecnico"){
-  document.querySelector('[data-tab="prospectos"]').hidden=true;
-  document.querySelector('[data-tab="cotizaciones"]').hidden=true;
+  for(const tab of ["prospectos","cotizaciones","ventas"])document.querySelector(`[data-tab="${tab}"]`).hidden=true;
  }
  await refresh();
 }
@@ -87,6 +106,7 @@ $("login-form").addEventListener("submit",async(event)=>{
   const email=$("email").value.trim(), password=$("password").value;
   const s=await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email,password},token:null});
   sessionStorage.setItem("yacusol_session",s.access_token);
+  if(s.refresh_token)sessionStorage.setItem("yacusol_refresh",s.refresh_token);
   await resume(s.access_token);
  }catch(e){$("login-message").textContent=e.message;loginScreen();$("login-message").textContent=e.message;}
  finally{button.disabled=false}
@@ -109,11 +129,11 @@ async function refresh(){
  clearNotice();
  // Una tabla todavía no migrada puede fallar: los demás módulos siguen visibles.
  const specs=[
-  ["prospectos",()=>list("prospectos")],
-  ["clientes",()=>list("clientes")],
-  ["cotizaciones",()=>list("cotizaciones")],
+  ["prospectos",()=>state.role==="tecnico"?[]:list("prospectos")],
+  ["clientes",()=>state.role==="tecnico"?[]:list("clientes")],
+  ["cotizaciones",()=>state.role==="tecnico"?[]:list("cotizaciones")],
   ["media_assets",()=>list("media_assets")],
-  ["ventas",()=>listRaw("ventas","creado_en.desc")],
+  ["ventas",()=>state.role==="tecnico"?[]:listRaw("ventas","creado_en.desc")],
   ["equipos",()=>listRaw("equipos","creado_en.desc")],
   ["mantenimientos",()=>listRaw("mantenimientos","registrado_en.desc")]
  ];
