@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex,nofollow">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://kdlthtyxsmcehxwgjkrn.supabase.co; img-src 'self' data: blob: https://kdlthtyxsmcehxwgjkrn.supabase.co; media-src 'self' blob: https://kdlthtyxsmcehxwgjkrn.supabase.co; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
   <title>YACUSOL Control 360 · Gestión privada</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261108-multimarca2">
 </head>
 <body>
   <div id="login" class="login-layout">
@@ -96,7 +96,7 @@
       </section>
 
       <section id="tab-cotizaciones" class="tab-pane" hidden>
-        <div class="section-head"><div><h2>Cotizaciones YACUSOL</h2><p>Precios oficiales, alcance comprobable y comunicación directa con el cliente.</p></div></div>
+        <div class="section-head"><div><h2>Cotizaciones ENERGÉTICOS · 5 marcas</h2><p>Desde esta ventana puedes cotizar rápido a clientes registrados. YACUSOL tiene precios publicados; las demás marcas requieren validación comercial.</p></div><a class="contact-action" href="https://energeticos2023.github.io/YACUSOL/cotizar/" target="_blank" rel="noopener">Cotizador público para clientes</a></div>
         <div class="two-col">
           <article class="panel">
             <h3>Preparar nueva cotización</h3>
@@ -114,7 +114,19 @@
                   <option value="personal">José Rafael Zeña Peche · RUC 10176338216</option>
                 </select>
               </label>
-              <label class="wide">Terma solar YACUSOL, baja presión
+              <label class="wide">Marca comercial
+                <select id="quote-brand" name="marca" required>
+                  <option value="YACUSOL">YACUSOL · precios oficiales publicados</option>
+                  <option value="XOLMAX">XOLMAX · precio por confirmar</option>
+                  <option value="LUXXOL">LUXXOL · precio por confirmar</option>
+                  <option value="INTIPOWER">INTIPOWER · precio por confirmar</option>
+                  <option value="TERMOINOX">TERMOINOX · precio por confirmar</option>
+                </select>
+              </label>
+              <label class="wide">Modelo / referencia de fabricante (opcional)
+                <input id="quote-model" name="modelo_fabricante" maxlength="160" placeholder="Según ficha técnica o fotografía verificada">
+              </label>
+              <label class="wide">Capacidad y precio oficial, solo YACUSOL
                 <select id="quote-capacity" name="capacidad_l" required>
                   <option value="120">120 litros · S/ 1,700.00</option>
                   <option value="150">150 litros · S/ 1,850.00</option>
@@ -122,10 +134,22 @@
                   <option value="250">250 litros · S/ 2,800.00</option>
                   <option value="300">300 litros · S/ 3,550.00</option>
                   <option value="400">400 litros · S/ 4,450.00</option>
-                  <option value="500">500 litros · S/ 5,700.00</option>
+                  <option value="500">500 litros · S/ 5,700.00</option><option value="0">Otra capacidad · por consultar</option>
                 </select>
               </label>
-              <label>Cantidad de termas <input id="quote-quantity" name="cantidad" type="number" min="1" max="100" value="1" required></label>
+              <div class="wide manual-quote-group" id="quote-manual-block" hidden>
+                <h3>Marca sin tarifa oficial cargada</h3>
+                <p class="muted small">Ingresa precio y alcance solo después de verificar lista del fabricante/proveedor. Sin precio validado, puedes guardar una solicitud interna, pero no emitirla como cotización formal.</p>
+                <div class="form-grid">
+                 <label>Precio unitario S/ <input id="quote-manual-price" name="precio_manual" type="number" min="0" step="0.01" placeholder="Pendiente"></label>
+                 <label>Fuente verificable del precio <input id="quote-manual-source" name="fuente_precio_manual" maxlength="220" placeholder="Lista / proveedor / fecha"></label>
+                 <label class="wide">Componentes incluidos (uno por línea) <textarea id="quote-manual-included" name="componentes_manuales" rows="3" maxlength="1500" placeholder="Según ficha técnica del fabricante"></textarea></label>
+                 <label class="wide">Exclusiones (una por línea) <textarea id="quote-manual-excluded" name="exclusiones_manuales" rows="3" maxlength="1500" placeholder="Accesorios, instalación, flete, etc., según oferta"></textarea></label>
+                 <label class="wide"><input id="quote-manual-tax" name="igv_manual" type="checkbox"> El importe manual incluye IGV (según comprobación comercial)</label>
+                 <label class="wide"><input id="quote-manual-verified" name="validado_manual" type="checkbox"> Confirmo que comprobé precio, alcance y vigencia con fuente comercial autorizada.</label>
+                </div>
+              </div>
+                            <label>Cantidad de termas <input id="quote-quantity" name="cantidad" type="number" min="1" max="100" value="1" required></label>
               <label>Vigencia hasta <input id="quote-expiration" type="date" name="valido_hasta" required></label>
               <label class="wide">Alcance del suministro
                 <select id="quote-package" name="paquete">
@@ -147,13 +171,13 @@
               </div>
               <label class="wide">Condiciones particulares <textarea id="quote-notes" name="notas" rows="3" maxlength="3000" placeholder="Plazo de entrega, ubicación, condiciones de suministro u otras condiciones acordadas"></textarea></label>
               <div class="wide quote-calculation" role="status" aria-live="polite">
-                <span>Precio final con IGV (según selección)</span>
+                <span>Precio de cotización (IGV según condición verificada)</span>
                 <strong id="quote-live-total">S/ 1,700.00</strong>
                 <small>La tarifa publicada se conserva como referencia; confirma disponibilidad y vigencia antes de enviar.</small>
               </div>
               <button type="submit" class="primary wide">Guardar cotización en borrador</button>
             </form>
-            <p class="muted small section-gap">Los valores base proceden de la lista oficial pública YACUSOL. Una cotización guardada conserva sus precios y componentes. No modifica el catálogo público.</p>
+            <p class="muted small section-gap">Solo YACUSOL tiene precios publicados y verificados. Para XOLMAX, LUXXOL, INTIPOWER y TERMOINOX se registra una solicitud sin precio: no constituye una oferta formal. Los precios, accesorios y fichas de otras marcas requieren verificación.</p>
           </article>
           <article class="panel">
             <h3>Cotizaciones registradas</h3>
@@ -388,9 +412,9 @@
           <article class="panel"><h3>Proceso de publicación</h3><ol class="flow-steps"><li>Fotografía o video original</li><li>Consentimiento y verificación</li><li>Aprobación administrativa</li><li>Diseño YACUSOL y control de marca</li><li>Metricool en las redes autorizadas</li><li>Prospecto → Cotización → Venta</li></ol><div class="note"><strong>Agente de IA</strong><p>La lectura automática del archivo privado aún necesita un conector autorizado. La aplicación no revela fotos a una IA sin ese permiso.</p></div></article>
         </div>
       </section>
-      <footer>YACUSOL CONTROL 360 · Versión de desarrollo · Los datos deben proceder de registros verificables.</footer>
+      <footer>ENERGÉTICOS CONTROL 360 · Versión multimarca 2026-11-08 · Datos y precios verificables.</footer>
     </main>
   </div>
-  <script src="./app.js" defer></script>
+  <script src="./app.js?v=20261108-multimarca2" defer></script>
 </body>
 </html>

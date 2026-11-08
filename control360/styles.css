@@ -116,3 +116,10 @@
  body.print-quote .quote-document{font-size:10.5pt}
  body.print-quote .quote-table thead{display:table-header-group}
 }
+
+/* Cotizador ENERGÉTICOS de cinco marcas; precio de proveedor nunca inventado */
+.manual-quote-group{border:1px solid #d5e1ed;border-left:4px solid #f28c1e;border-radius:12px;padding:16px;background:#f3f7fc}
+.manual-quote-group[hidden]{display:none!important}
+.manual-quote-group h3{font-size:15px;margin:0 0 7px}
+.manual-quote-group .form-grid label:has(input[type=checkbox]){display:flex;gap:9px;align-items:start;font-size:12px}
+.manual-quote-group input[type=checkbox]{width:18px;height:18px;min-height:18px;accent-color:#0c2340}

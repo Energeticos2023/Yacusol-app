@@ -38,7 +38,7 @@ const vSchema=read("album-tecnico-servicios.sql");
 assert(vSchema.includes("foreign key (mantenimiento_id,equipo_id)"),"No se protege vínculo fotos-servicio");
 assert(css.includes("@media print"),"No existe ficha imprimible");
 
-for(const id of ["quote-form","quote-customer","quote-prospect","quote-issuer","quote-capacity","quote-quantity","quote-expiration","quote-extras","quote-package","quote-live-total","quote-print-sheet","quote-preview-content"]){
+for(const id of ["quote-form","quote-customer","quote-prospect","quote-issuer","quote-brand","quote-model","quote-capacity","quote-quantity","quote-expiration","quote-extras","quote-package","quote-manual-block","quote-manual-price","quote-manual-source","quote-manual-included","quote-manual-excluded","quote-manual-tax","quote-manual-verified","quote-live-total","quote-print-sheet","quote-preview-content"]){
  assert(html.includes('id="'+id+'"'),"Falta control de cotización "+id);
 }
 assert(js.includes("YACUSOL_PRICES"),"Falta catalogo con precios oficiales");
@@ -70,6 +70,7 @@ app.state.records.mantenimientos=[{equipo_id:"t1",fecha_realizada:"2026-11-01",a
 assert.equal(app.dueItems()[0].date,"2026-11-08","Mantenimientos anulados no afectan próxima revisión");
 app.state.records.mantenimientos[0].anulado=false;
 assert.equal(app.dueItems()[0].date,"2027-11-01","Servicios válidos renuevan vencimiento");
+element("quote-brand").value="YACUSOL";
 element("quote-capacity").value="120";
 element("quote-quantity").value="1";
 element("quote-package").value="navidad_2026";
@@ -82,4 +83,17 @@ assert.equal(app.getQuoteState().total,2050,"No se deben cobrar barra y resisten
 element("quote-extras").querySelectorAll=()=>[];
 element("quote-capacity").value="400";element("quote-quantity").value="2";
 assert.equal(app.getQuoteState().total,8900,"Total de 2 termas YACUSOL 400 L");
+element("quote-brand").value="XOLMAX";
+element("quote-manual-price").value="0";
+assert.equal(app.getQuoteState().total,null,"No inventar precio XOLMAX");
+element("quote-manual-price").value="3200";
+element("quote-manual-included").value="Termotanque según fabricante\nEstructura";
+element("quote-manual-excluded").value="Flete\nInstalación";
+assert.equal(app.getQuoteState().total,6400,"Cotización manual multimarca de dos unidades");
+assert.equal(app.getQuoteState().included[0],"Termotanque según fabricante","Alcance debe proceder de texto verificado");
+element("quote-brand").value="TERMOINOX";
+element("quote-manual-price").value="";
+assert.equal(app.getQuoteState().total,null,"No inventar precio TERMOINOX");
+assert(js.includes("MULTIBRAND")&&js.includes("XOLMAX")&&js.includes("LUXXOL")&&js.includes("INTIPOWER")&&js.includes("TERMOINOX"),"Faltan marcas");
+
 console.log("Control360 QA: OK. IDs="+references.length+"; JS, DOM, marcas, seguridad e intervalos de mantenimiento.");
