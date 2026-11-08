@@ -83,7 +83,7 @@ create policy "y360_media_select" on public.media_assets for select to authentic
        (equipo_id is not null and exists(
          select 1 from public.asignaciones a
          where a.equipo_id=media_assets.equipo_id and a.tecnico_id=auth.uid())))
-  )
+  ))
  );
 
 -- Tecnico solo sube evidencia a equipos que efectivamente tiene asignados.
