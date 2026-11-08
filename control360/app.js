@@ -122,7 +122,7 @@ document.querySelectorAll(".nav [data-tab]").forEach(button=>button.addEventList
  state.tab=button.dataset.tab;
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b===button));
  document.querySelectorAll(".tab-pane").forEach(p=>p.hidden=p.id!=="tab-"+state.tab);
- const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",clientes:"Mis clientes e instalaciones",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Mi álbum de fotos y videos",mantenimiento:"Mantenimiento",campanas:"Campañas"};
+ const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",clientes:"Mis clientes e instalaciones",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Mi álbum de fotos y videos",ficha:"Ficha técnica por terma",mantenimiento:"Mantenimiento",campanas:"Campañas"};
  $("page-heading").textContent=titles[state.tab];
  clearNotice();
 }));
@@ -133,10 +133,11 @@ async function refresh(){
  // Una tabla todavía no migrada puede fallar: los demás módulos siguen visibles.
  const specs=[
   ["prospectos",()=>state.role==="tecnico"?[]:list("prospectos")],
-  ["clientes",()=>state.role==="tecnico"?[]:list("clientes")],
+  ["clientes",()=>list("clientes")],
   ["embudo_campana",()=>state.role==="tecnico"?[]:api("/rest/v1/y360_embudo_campana?select=*&order=canal.asc,campana.asc")],
   ["cotizaciones",()=>state.role==="tecnico"?[]:list("cotizaciones")],
   ["media_assets",()=>list("media_assets")],
+  ["preparacion_visitas",()=>listRaw("preparacion_visitas","creado_en.desc")],
   ["ventas",()=>state.role==="tecnico"?[]:listRaw("ventas","creado_en.desc")],
   ["equipos",()=>listRaw("equipos","creado_en.desc")],
   ["mantenimientos",()=>listRaw("mantenimientos","registrado_en.desc")]
@@ -212,9 +213,13 @@ function renderAll(){
  for(const p of ps){const option=el("option",p.nombre+" · "+(p.distrito||"" ));option.value=p.id;select.append(option)}
  if([...select.options].some(o=>o.value===current))select.value=current;
   renderSalesAndCustomers(customers,vs,qu,eq);
- fillSelect("upload-media-client",customers,"Sin cliente asociado","id",c=>c.nombre+" · "+(c.zona||""));
+ fillSelect("upload-media-client",customers,"Selecciona cliente","id",c=>c.nombre+" · "+(c.zona||""));
+ refreshUploadEquipmentPicker();
+ fillSelect("technical-equipment",eq.filter(x=>x.activo!==false),"Selecciona terma","id",x=>(customers.find(c=>c.id===x.cliente_id)?.nombre||"Cliente")+" · "+x.modelo+" "+x.capacidad_l+" L");
+
  renderCustomerDirectory(customers,eq);
  renderMedia(media);
+ renderTechnicalSheet();
  renderChannelPerformance(ps,qu,vs,state.records.embudo_campana);
  renderMaintenancePanel(customers,eq);
 
@@ -586,6 +591,9 @@ $("media-form").addEventListener("submit",async e=>{
  const allowed=["image/jpeg","image/png","image/webp","video/mp4"];
  if(!allowed.includes(file.type))return say("Tipo de archivo no permitido.");
  if(file.size>50*1024*1024)return say("Archivo demasiado grande (máximo 50 MB).");
+ if(!d.cliente_id||!d.equipo_id)return say("Para archivo técnico selecciona un cliente y su terma específica.");
+ if(!(state.records.equipos||[]).some(x=>x.id===d.equipo_id&&x.cliente_id===d.cliente_id&&x.activo!==false))return say("La terma no pertenece al cliente seleccionado o no está activa.");
+ if(d.fecha_captura&&d.fecha_captura>localToday())return say("La fecha de captura no puede ser futura.");
  if(!d.derechos_confirmados)return say("Debes confirmar derechos sobre el material.");
  if(d.permiso_publicitario&&!d.evidencia_permiso?.trim())return say("Registra una referencia verificable del permiso de publicidad.");
  const button=e.target.querySelector("button");button.disabled=true;
@@ -595,7 +603,7 @@ $("media-form").addEventListener("submit",async e=>{
   const name=state.user.id+"/"+crypto.randomUUID()+"."+ext;
   await api("/storage/v1/object/yacusol-media/"+name,{method:"POST",body:file,headers:{"Content-Type":file.type,"x-upsert":"false","cache-control":"3600"}});
   try {
-   await insert("media_assets",{bucket_key:name,nombre:d.nombre.trim(),tipo:file.type.startsWith("video")?"video":"foto",etapa_obra:d.etapa_obra,zona:d.zona||null,derechos_confirmados:true,permiso_publicitario:!!d.permiso_publicitario,evidencia_permiso:d.evidencia_permiso||null,cliente_id:d.cliente_id||null,sha256_hex:hash});
+   await insert("media_assets",{bucket_key:name,nombre:d.nombre.trim(),tipo:file.type.startsWith("video")?"video":"foto",etapa_obra:d.etapa_obra,zona:d.zona||null,derechos_confirmados:true,permiso_publicitario:!!d.permiso_publicitario,evidencia_permiso:d.evidencia_permiso||null,cliente_id:d.cliente_id,equipo_id:d.equipo_id,categoria_tecnica:d.categoria_tecnica||"sin_clasificar",nota_tecnica:d.nota_tecnica||null,fecha_captura:d.fecha_captura||null,sha256_hex:hash});
   } catch (dbError){
    throw new Error("El archivo se subió, pero su ficha no se guardó. Contacta al administrador con la ruta "+name+". Detalle: "+dbError.message);
   }
