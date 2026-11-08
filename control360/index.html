@@ -33,6 +33,7 @@
         <button data-tab="inicio" class="active">▦ <span>Resumen</span></button>
         <button data-tab="prospectos">◉ <span>Prospectos</span></button>
         <button data-tab="cotizaciones">▤ <span>Cotizaciones</span></button>
+        <button data-tab="ventas">◈ <span>Ventas e instalaciones</span></button>
         <button data-tab="media">▧ <span>Fotos y videos</span></button>
         <button data-tab="mantenimiento">⚙ <span>Mantenimiento</span></button>
         <button data-tab="campanas">✺ <span>Campañas</span></button>
@@ -110,6 +111,46 @@
         </div>
       </section>
 
+      <section id="tab-ventas" class="tab-pane" hidden>
+        <div class="section-head"><div><h2>Ventas e instalaciones</h2><p>Cierra ventas reales y registra el equipo instalado sin duplicar operaciones.</p></div></div>
+        <div class="two-col">
+          <article class="panel"><h3>1 · Cliente</h3>
+            <form id="customer-form" class="form-grid">
+              <label class="wide">Nombre completo <input name="nombre" required minlength="2" maxlength="160"></label>
+              <label>Teléfono <input name="telefono" inputmode="tel" placeholder="519XXXXXXXX"></label>
+              <label>Distrito <input name="zona" maxlength="160"></label>
+              <button type="submit" class="primary wide">Registrar cliente</button>
+            </form>
+            <div id="customer-list" class="records section-gap"></div>
+          </article>
+          <article class="panel"><h3>2 · Registrar venta</h3>
+            <form id="sale-form" class="form-grid">
+              <label class="wide">Cliente <select name="cliente_id" id="sale-customer" required></select></label>
+              <label class="wide">Cotización vinculada <select name="cotizacion_id" id="sale-quote"><option value="">Sin cotización asociada</option></select></label>
+              <label>Fecha de venta <input name="fecha" type="date" required></label>
+              <label>Monto de venta S/ <input name="monto_total" type="number" step="0.01" min="0.01" required></label>
+              <label class="wide">Referencia/comprobante <input name="referencia" maxlength="100" placeholder="N.º pedido, factura, contrato"></label>
+              <button type="submit" class="primary wide">Registrar venta en borrador</button>
+            </form>
+            <p class="muted small">Solo una persona administradora confirma una venta; un borrador no se contabiliza como venta cerrada.</p>
+          </article>
+        </div>
+        <div class="two-col section-gap">
+          <article class="panel"><h3>3 · Ventas registradas</h3><div id="sales-list" class="records"></div></article>
+          <article class="panel"><h3>4 · Registrar terma instalada</h3>
+            <form id="equipment-form" class="form-grid">
+              <label class="wide">Cliente <select name="cliente_id" id="equipment-customer" required></select></label>
+              <label class="wide">Venta confirmada <select name="venta_id" id="equipment-sale"><option value="">Sin venta vinculada</option></select></label>
+              <label>Modelo <input name="modelo" required minlength="2" maxlength="120"></label>
+              <label>Capacidad (L) <input name="capacidad_l" type="number" min="1" max="2000" required></label>
+              <label>Número de serie <input name="serie" maxlength="100"></label>
+              <label>Fecha de instalación <input name="instalado_el" type="date"></label>
+              <label class="wide">Revisión cada (meses) <input name="intervalo_meses" type="number" min="1" max="120" value="12" required></label>
+              <button class="primary wide" type="submit">Registrar equipo</button>
+            </form>
+          </article>
+        </div>
+      </section>
       <section id="tab-media" class="tab-pane" hidden>
         <div class="section-head"><div><h2>Banco de fotos y videos reales</h2><p>Tu propia biblioteca para campañas YACUSOL auténticas.</p></div><span class="status-label">Almacenamiento privado</span></div>
         <div class="two-col">
@@ -135,7 +176,7 @@
         <div class="section-head"><div><h2>Mantenimiento y posventa</h2><p>El vínculo comercial continúa después de instalar la terma.</p></div></div>
         <div class="two-col">
           <article class="panel"><h3>Equipos y próximas revisiones</h3><div id="equipment-list" class="records"></div></article>
-          <article class="panel"><h3>Servicios registrados</h3><div id="maintenance-list" class="records"></div><div class="note"><strong>Recordatorios seguros</strong><p>Esta versión organiza las fechas. No envía mensajes por WhatsApp sin una integración oficial y consentimiento verificado.</p></div></article>
+          <article class="panel"><h3>Registrar un mantenimiento realizado</h3><form id="maintenance-form" class="form-grid"><label class="wide">Equipo <select name="equipo_id" id="maintenance-equipment" required></select></label><label>Fecha de servicio <input type="date" name="fecha_realizada" required></label><label>Tipo <select name="tipo"><option value="preventivo">Preventivo</option><option value="correctivo">Correctivo</option></select></label><label class="wide">Observaciones <textarea name="observaciones" rows="2" maxlength="2000"></textarea></label><button class="primary wide" type="submit">Registrar mantenimiento ejecutado</button></form><h3 class="section-gap">Historial de servicios</h3><div id="maintenance-list" class="records"></div><div class="note"><strong>Recordatorios seguros</strong><p>Esta versión organiza las fechas. No envía mensajes por WhatsApp sin una integración oficial y consentimiento verificado.</p></div></article>
         </div>
       </section>
 
