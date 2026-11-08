@@ -96,7 +96,7 @@
       </section>
 
       <section id="tab-cotizaciones" class="tab-pane" hidden>
-        <div class="section-head"><div><h2>Cotizaciones YACUSOL</h2><p>Precios oficiales, alcance comprobable y comunicación directa con el cliente.</p></div></div>
+        <div class="section-head"><div><h2>Cotizaciones YACUSOL</h2><p>Cinco marcas, precios sustentados cuando estén disponibles y comunicación directa con el cliente.</p></div></div>
         <div class="two-col">
           <article class="panel">
             <h3>Preparar nueva cotización</h3>
@@ -114,7 +114,19 @@
                   <option value="personal">José Rafael Zeña Peche · RUC 10176338216</option>
                 </select>
               </label>
-              <label class="wide">Terma solar YACUSOL, baja presión
+              <label class="wide">Marca comercial
+                <select id="quote-brand" name="marca" required>
+                  <option value="YACUSOL">YACUSOL · precios oficiales publicados</option>
+                  <option value="XOLMAX">XOLMAX · precio por confirmar</option>
+                  <option value="LUXXOL">LUXXOL · precio por confirmar</option>
+                  <option value="INTIPOWER">INTIPOWER · precio por confirmar</option>
+                  <option value="TERMOINOX">TERMOINOX · precio por confirmar</option>
+                </select>
+              </label>
+              <label class="wide">Modelo / referencia de fabricante (opcional)
+                <input id="quote-model" name="modelo_fabricante" maxlength="160" placeholder="Según ficha técnica o fotografía verificada">
+              </label>
+              <label class="wide">Capacidad y precio oficial, solo YACUSOL
                 <select id="quote-capacity" name="capacidad_l" required>
                   <option value="120">120 litros · S/ 1,700.00</option>
                   <option value="150">150 litros · S/ 1,850.00</option>
@@ -122,7 +134,7 @@
                   <option value="250">250 litros · S/ 2,800.00</option>
                   <option value="300">300 litros · S/ 3,550.00</option>
                   <option value="400">400 litros · S/ 4,450.00</option>
-                  <option value="500">500 litros · S/ 5,700.00</option>
+                  <option value="500">500 litros · S/ 5,700.00</option><option value="0">Otra capacidad · por consultar</option>
                 </select>
               </label>
               <label>Cantidad de termas <input id="quote-quantity" name="cantidad" type="number" min="1" max="100" value="1" required></label>
@@ -153,7 +165,7 @@
               </div>
               <button type="submit" class="primary wide">Guardar cotización en borrador</button>
             </form>
-            <p class="muted small section-gap">Los valores base proceden de la lista oficial pública YACUSOL. Una cotización guardada conserva sus precios y componentes. No modifica el catálogo público.</p>
+            <p class="muted small section-gap">Solo YACUSOL tiene precios publicados y verificados. Para XOLMAX, LUXXOL, INTIPOWER y TERMOINOX se registra una solicitud sin precio: no constituye una oferta formal. Los precios, accesorios y fichas de otras marcas requieren verificación.</p>
           </article>
           <article class="panel">
             <h3>Cotizaciones registradas</h3>
