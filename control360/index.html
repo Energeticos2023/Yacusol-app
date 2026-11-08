@@ -32,9 +32,10 @@
       <nav class="nav" aria-label="Navegación">
         <button data-tab="inicio" class="active">▦ <span>Resumen</span></button>
         <button data-tab="prospectos">◉ <span>Prospectos</span></button>
+        <button data-tab="clientes">♧ <span>Mis clientes</span></button>
         <button data-tab="cotizaciones">▤ <span>Cotizaciones</span></button>
         <button data-tab="ventas">◈ <span>Ventas e instalaciones</span></button>
-        <button data-tab="media">▧ <span>Fotos y videos</span></button>
+        <button data-tab="media">▧ <span>Mi álbum de fotos y videos</span></button>
         <button data-tab="mantenimiento">⚙ <span>Mantenimiento</span></button>
         <button data-tab="campanas">✺ <span>Campañas</span></button>
       </nav>
@@ -54,6 +55,8 @@
           <div class="hero-sun" aria-hidden="true">☀</div>
         </div>
         <div class="kpi-grid">
+          <article class="kpi"><span>Clientes registrados</span><strong id="kpi-clientes">—</strong><small>Fichas privadas</small></article>
+          <article class="kpi"><span>Termas instaladas</span><strong id="kpi-instalaciones">—</strong><small>Con fecha de instalación registrada</small></article>
           <article class="kpi"><span>Prospectos registrados</span><strong id="kpi-prospectos">—</strong><small>Contactos captados</small></article>
           <article class="kpi"><span>Cotizaciones enviadas</span><strong id="kpi-cotizaciones">—</strong><small>Propuestas comerciales</small></article>
           <article class="kpi"><span>Ventas registradas</span><strong id="kpi-ventas">—</strong><small>Registro interno</small></article>
@@ -111,19 +114,30 @@
         </div>
       </section>
 
-      <section id="tab-ventas" class="tab-pane" hidden>
-        <div class="section-head"><div><h2>Ventas e instalaciones</h2><p>Cierra ventas reales y registra el equipo instalado sin duplicar operaciones.</p></div></div>
+      <section id="tab-clientes" class="tab-pane" hidden>
+        <div class="section-head"><div><h2>Mis clientes e instalaciones</h2><p>Busca cualquier cliente, consulta sus termas y fechas de próximo mantenimiento.</p></div><span class="status-label" id="client-total-label">0 clientes</span></div>
         <div class="two-col">
-          <article class="panel"><h3>1 · Cliente</h3>
+                    <article class="panel"><h3>1 · Cliente</h3>
             <form id="customer-form" class="form-grid">
               <label class="wide">Nombre completo <input name="nombre" required minlength="2" maxlength="160"></label>
               <label>Teléfono <input name="telefono" inputmode="tel" placeholder="519XXXXXXXX"></label>
               <label>Distrito <input name="zona" maxlength="160"></label>
               <button type="submit" class="primary wide">Registrar cliente</button>
             </form>
-            <div id="customer-list" class="records section-gap"></div>
           </article>
-          <article class="panel"><h3>2 · Registrar venta</h3>
+
+          <article class="panel">
+            <h3>Directorio de clientes</h3>
+            <label>Buscar por nombre, distrito o teléfono<input id="client-search" type="search" placeholder="Escribe para buscar"></label>
+            <div id="client-directory" class="records client-directory section-gap" aria-live="polite"></div>
+            <p class="muted small">Registrar un cliente no significa que ya tenga una terma instalada. Vincula el equipo y su fecha real para calcular la revisión.</p>
+          </article>
+        </div>
+      </section>
+      <section id="tab-ventas" class="tab-pane" hidden>
+        <div class="section-head"><div><h2>Ventas e instalaciones</h2><p>Cierra ventas reales y registra el equipo instalado sin duplicar operaciones.</p></div></div>
+        <div class="two-col">
+          <article class="panel"><h3>1 · Registrar venta</h3>
             <form id="sale-form" class="form-grid">
               <label class="wide">Cliente <select name="cliente_id" id="sale-customer" required></select></label>
               <label class="wide">Cotización vinculada <select name="cotizacion_id" id="sale-quote"><option value="">Sin cotización asociada</option></select></label>
@@ -136,8 +150,8 @@
           </article>
         </div>
         <div class="two-col section-gap">
-          <article class="panel"><h3>3 · Ventas registradas</h3><div id="sales-list" class="records"></div></article>
-          <article class="panel"><h3>4 · Registrar terma instalada</h3>
+          <article class="panel"><h3>2 · Ventas registradas</h3><div id="sales-list" class="records"></div></article>
+          <article class="panel"><h3>3 · Registrar terma instalada</h3>
             <form id="equipment-form" class="form-grid">
               <label class="wide">Cliente <select name="cliente_id" id="equipment-customer" required></select></label>
               <label class="wide">Venta confirmada <select name="venta_id" id="equipment-sale"><option value="">Sin venta vinculada</option></select></label>
@@ -168,8 +182,22 @@
             </form>
             <p class="muted small">El archivo no se publica en redes. Un administrador deberá verificar el original y aprobar su uso promocional. Límite: 50 MB por archivo.</p>
           </article>
-          <article class="panel"><h3>Material registrado</h3><div id="media-list" class="records"></div></article>
+          <article class="panel"><h3>Archivos y permisos</h3><div id="media-list" class="records"></div></article>
         </div>
+        <article class="panel section-gap">
+          <div class="panel-title"><h3>Mi álbum privado</h3><span class="muted" id="album-count">0 archivos</span></div>
+          <label class="album-filter">Mostrar
+            <select id="album-filter">
+              <option value="todos">Todas las fotos y videos</option>
+              <option value="foto">Solo fotografías</option>
+              <option value="video">Solo videos</option>
+              <option value="aprobados">Aprobados para publicidad</option>
+              <option value="sinvincular">Sin vincular a cliente</option>
+            </select>
+          </label>
+          <div id="media-gallery" class="album-grid" aria-live="polite"></div>
+          <p class="muted small">Los originales están protegidos. Las miniaturas se muestran con enlaces temporales, únicamente después de iniciar sesión.</p>
+        </article>
       </section>
 
       <section id="tab-mantenimiento" class="tab-pane" hidden>
