@@ -33,7 +33,9 @@ function fmtDate(raw){
  return Number.isNaN(d.getTime())?String(raw):new Intl.DateTimeFormat("es-PE",{day:"2-digit",month:"short",year:"numeric",timeZone:"America/Lima"}).format(d);
 }
 function localToday(){
- return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Lima",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+ const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Lima",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+ const get=type=>parts.find(x=>x.type===type)?.value;
+ return get("year")+"-"+get("month")+"-"+get("day");
 }
 function money(v){
  if(v===null||v===undefined||v==="")return "Precio por definir";
@@ -175,7 +177,21 @@ function renderAll(){
  if(due.length)recordLine(pri,"Revisiones de mantenimiento",due.filter(x=>x.days<=30).length+" equipos próximos o vencidos","Posventa","warning");
  if(!pri.children.length)pri.append(el("p","Sin acciones registradas.","muted"));
  const pl=$("prospect-list");pl.replaceChildren();
- for(const p of ps.slice(0,80))recordLine(pl,p.nombre,(p.distrito||"Zona no registrada")+" · "+(p.fuente||"manual")+" · "+fmtDate(p.creado_en),p.etapa,p.etapa==="ganado"?"success":"");
+ for(const p of ps.slice(0,80)){
+  const row=recordLine(pl,p.nombre,(p.distrito||"Zona no registrada")+" · "+(p.fuente||"manual")+" · "+fmtDate(p.creado_en),p.etapa,p.etapa==="ganado"?"success":"");
+  if(["admin","ventas"].includes(state.role)){
+   const select=el("select");select.setAttribute("aria-label","Cambiar estado de prospecto "+p.nombre);
+   for(const etapa of ["nuevo","contactado","calificado","cotizado","ganado","perdido"]){
+    const o=el("option",etapa);o.value=etapa;select.append(o);
+   }
+   select.value=p.etapa;select.addEventListener("change",async()=>{
+    if(!window.confirm("¿Has verificado el cambio de etapa de este prospecto?")){select.value=p.etapa;return;}
+    try{await patchRecord("prospectos",p.id,{etapa:select.value,actualizado_en:new Date().toISOString()});await refresh();say("Etapa del prospecto actualizada.");}
+    catch(e){select.value=p.etapa;showErr(e,"Etapa")}
+   });
+   row.append(select);
+  }
+ }
  const ql=$("quote-list");ql.replaceChildren();
  for(const q of qu.slice(0,80)){
   const row=recordLine(ql,(q.referencia||q.modelo),money(q.precio_total)+" · "+fmtDate(q.creado_en),q.estado,q.estado==="aceptada"?"success":"");
@@ -193,6 +209,7 @@ function renderAll(){
  if([...select.options].some(o=>o.value===current))select.value=current;
  renderSalesAndCustomers(customers,vs,qu,eq);
  renderMedia(media);
+ renderChannelPerformance(ps,qu,vs);
  const ml=$("maintenance-list");ml.replaceChildren();
  for(const m of (state.records.mantenimientos||[]).slice(0,50))recordLine(ml,"Servicio "+fmtDate(m.fecha_realizada),(m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones"),"Realizado","success");
  const eql=$("equipment-list");eql.replaceChildren();
@@ -233,6 +250,21 @@ $("quote-form").addEventListener("submit",async e=>{
  try{await insert("cotizaciones",data);e.target.reset();await refresh();say("Borrador registrado. Verifica compatibilidad y condiciones comerciales antes de enviarlo.");}catch(err){showErr(err,"Cotización")}
 });
 
+function renderChannelPerformance(prospects,quotes,sales){
+ const target=$("channel-performance");target.replaceChildren();
+ const sources=["facebook","instagram","tiktok","whatsapp","web","referido","manual","otro"];
+ const confirmed=sales.filter(v=>v.estado==="confirmada");
+ for(const source of sources){
+  const prs=prospects.filter(p=>p.fuente===source);
+  if(!prs.length)continue;
+  const ids=new Set(prs.map(p=>p.id));
+  const qs=quotes.filter(q=>ids.has(q.prospecto_id));
+  const quoteIds=new Set(qs.map(q=>q.id));
+  const sold=confirmed.filter(v=>quoteIds.has(v.cotizacion_id));
+  recordLine(target,source.toUpperCase(),prs.length+" prospectos · "+qs.filter(q=>["enviada","aceptada"].includes(q.estado)).length+" cotizaciones enviadas · "+sold.length+" ventas confirmadas","Medido","success");
+ }
+ if(!target.children.length)empty(target,"No existen contactos atribuibles a canales de campaña.");
+}
 async function patchRecord(table,id,changes){
  const result=await api("/rest/v1/"+table+"?id=eq."+encodeURIComponent(id),{method:"PATCH",body:changes,headers:{"Prefer":"return=representation"}});
  if(!Array.isArray(result)||result.length!==1)throw new Error("No se confirmó el cambio: revisa permisos y estado del registro.");
