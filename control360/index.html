@@ -124,6 +124,15 @@
               <label>Distrito <input name="zona" maxlength="160"></label>
               <button type="submit" class="primary wide">Registrar cliente</button>
             </form>
+            <form id="edit-customer-form" class="form-grid section-gap" hidden>
+              <h3 class="wide">Editar ficha del cliente</h3>
+              <input type="hidden" name="id" id="edit-customer-id">
+              <label class="wide">Nombre completo<input name="nombre" required minlength="2" maxlength="160"></label>
+              <label>Teléfono<input name="telefono" inputmode="tel"></label>
+              <label>Distrito<input name="zona" maxlength="160"></label>
+              <button type="submit" class="primary">Guardar cambios</button>
+              <button type="button" id="cancel-customer-edit" class="secondary">Cancelar</button>
+            </form>
           </article>
 
           <article class="panel">
