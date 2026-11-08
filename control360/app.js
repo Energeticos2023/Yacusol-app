@@ -257,6 +257,9 @@ function renderMaintenancePanel(customers,equipment){
    !active?"Archivado":!d?"Pendiente":d.days<0?"Vencido":d.days<=30?"Próximo":"Programado",
    !active?"warning":d&&d.days<=30?"warning":"");
   if(c)phoneActions(row,c);
+  const technical=el("button","Ficha técnica y fotos");technical.type="button";
+  technical.addEventListener("click",()=>openTechnicalSheet(e.id));
+  row.append(technical);
   if(state.role==="admin"){
    const actions=el("div",null,"maintenance-actions");
    const edit=el("button","Editar equipo");edit.type="button";edit.addEventListener("click",()=>startEquipmentEdit(e));actions.append(edit);
@@ -575,6 +578,10 @@ function renderCustomerDirectory(customers,equipment){
    const edit=el("button","Editar datos del cliente");
    edit.addEventListener("click",()=>startEditCustomer(c));
    item.append(edit);
+   for(const installation of owned){
+    const tech=el("button","Ver fotos y preparar visita: "+installation.modelo);
+    tech.type="button";tech.addEventListener("click",()=>openTechnicalSheet(installation.id));item.append(tech);
+   }
    const open=el("button","Registrar o consultar terma");
    open.addEventListener("click",()=>{
      document.querySelector('[data-tab="ventas"]').click();
