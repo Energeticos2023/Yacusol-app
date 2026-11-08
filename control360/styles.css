@@ -70,3 +70,49 @@
   #tab-ficha .visit-checks{grid-template-columns:repeat(2,minmax(0,1fr))}
   .album-card{break-inside:avoid}
 }
+
+/* Cotizador ENERGETICOS / YACUSOL: catalogo y cotizacion comercial */
+.quote-extra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.quote-extra-grid label{display:flex;gap:9px;align-items:start;padding:10px;border:1px solid #dce7f2;border-radius:8px;line-height:1.35;font-size:12px!important;font-weight:500!important}
+.quote-extra-grid input{width:18px;height:18px;min-width:18px;accent-color:#0c2340;padding:0}
+.quote-extra-grid input:disabled{opacity:.5}
+.quote-calculation{background:#eff5fb;border-left:4px solid #f28c1e;display:grid;gap:5px;padding:16px;border-radius:9px}
+.quote-calculation>span{font-size:13px}.quote-calculation>strong{font-size:31px;color:#0c2340}.quote-calculation>small{font-size:11px;color:#78889b}
+.quote-document{margin-top:20px;background:#fff;color:#152941;max-width:900px;padding:35px 40px;font-family:Arial,sans-serif;line-height:1.5}
+.quote-document p{text-align:justify}
+.quote-letterhead{text-align:center;border-bottom:3px solid #f28c1e;padding-bottom:16px;margin-bottom:17px}
+.quote-letterhead p{text-align:center;margin:3px 0;font-size:12px}
+.quote-letter-brand{display:grid;gap:3px;letter-spacing:.1em}
+.quote-letter-brand strong{font-size:21px;color:#0c2340}
+.quote-letter-brand span{font-size:10px;color:#d9700a}
+.quote-letterhead h2{margin:14px 0;font-size:24px}
+.quote-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 20px;background:#f4f7fb;border-radius:8px;padding:14px;margin:13px 0 19px;font-size:12px}
+.quote-section{margin-top:18px;break-inside:avoid}
+.quote-section h4{color:#0c2340;border-bottom:1px solid #dae4f0;padding-bottom:5px;margin:7px 0;font-size:14px}
+.quote-section ul{padding-left:20px;margin:7px 0}
+.quote-section li{margin-bottom:4px;text-align:justify}
+.quote-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:15px 0}
+.quote-table th{background:#0c2340;color:#fff;font-size:11px;padding:9px;text-align:left}
+.quote-table td{padding:9px;border-bottom:1px solid #dce4ed;font-size:11px;overflow-wrap:anywhere}
+.quote-table th:first-child{width:49%}
+.quote-table td:not(:first-child),.quote-table th:not(:first-child){text-align:right}
+.quote-sum{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f2f5fa;padding:12px 15px;border-left:4px solid #f28c1e}
+.quote-sum strong:last-child{font-size:20px;color:#0c2340}
+.quote-preview-actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px}
+.quote-preview-actions button{border:1px solid #c5d4e2;border-radius:9px;background:#fff;color:#0c2340;font-weight:700;padding:10px 12px}
+.quote-preview-actions button:first-child{background:#f28c1e;border-color:#f28c1e}
+@media(max-width:640px){.quote-extra-grid,.quote-meta{grid-template-columns:1fr}.quote-document{padding:18px}.quote-table th,.quote-table td{padding:6px;font-size:10px}}
+@media print{
+ body.print-quote .sidebar,body.print-quote .topbar,body.print-quote footer,body.print-quote .notice,
+ body.print-quote #tab-cotizaciones>.section-head,body.print-quote #tab-cotizaciones>.two-col,
+ body.print-quote .quote-preview-actions,body.print-quote .quote-document button,
+ body.print-quote .tab-pane:not(#tab-cotizaciones),body.print-quote #tab-ficha{display:none!important}
+ body.print-quote #tab-cotizaciones,body.print-quote #quote-print-sheet{display:block!important}
+ body.print-quote .main{max-width:none!important;width:100%;margin:0;padding:0}
+ body.print-quote #quote-print-sheet{padding:0!important;margin:0;border:0;box-shadow:none;max-width:none}
+ body.print-quote .app-shell{display:block!important}
+ body.print-quote .quote-letterhead{margin-top:0}
+ body.print-quote .quote-section{break-inside:avoid}
+ body.print-quote .quote-document{font-size:10.5pt}
+ body.print-quote .quote-table thead{display:table-header-group}
+}

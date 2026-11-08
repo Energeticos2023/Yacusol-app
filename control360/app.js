@@ -198,20 +198,29 @@ function renderAll(){
   }
  }
  const ql=$("quote-list");ql.replaceChildren();
- for(const q of qu.slice(0,80)){
-  const row=recordLine(ql,(q.referencia||q.modelo),money(q.precio_total)+" · "+fmtDate(q.creado_en),q.estado,q.estado==="aceptada"?"success":"");
+ for(const q of qu.slice(0,100)){
+  const customer=(state.records.clientes||[]).find(c=>c.id===q.cliente_id);
+  const prospect=(state.records.prospectos||[]).find(p=>p.id===q.prospecto_id);
+  const row=recordLine(ql,(customer?.nombre||prospect?.nombre||"Sin destinatario")+" · "+q.modelo,
+    money(q.precio_total)+" · "+fmtDate(q.creado_en)+" · "+(q.modalidad==="navidad_2026"?"Navidad":"Regular"),
+    q.estado,q.estado==="aceptada"?"success":"");
+  const tools=el("div",null,"maintenance-actions");
+  const preview=el("button","Ver documento / PDF");preview.type="button";
+  preview.addEventListener("click",()=>previewQuotation(q));tools.append(preview);
+  const wa=el("button","Preparar WhatsApp");wa.type="button";
+  wa.addEventListener("click",()=>shareQuoteByWhatsApp(q));tools.append(wa);
   if(["admin","ventas"].includes(state.role)&&q.estado==="borrador"){
-   const b=el("button","Marcar cotización enviada");
-   b.addEventListener("click",()=>updateQuoteStatus(q,"enviada"));row.append(b);
+   const b=el("button","Marcar enviada");b.type="button";
+   b.addEventListener("click",()=>updateQuoteStatus(q,"enviada"));tools.append(b);
   }else if(["admin","ventas"].includes(state.role)&&q.estado==="enviada"){
-   const b=el("button","Registrar aceptación confirmada");
-   b.addEventListener("click",()=>updateQuoteStatus(q,"aceptada"));row.append(b);
+   const b=el("button","Registrar aceptación");b.type="button";
+   b.addEventListener("click",()=>updateQuoteStatus(q,"aceptada"));tools.append(b);
   }
+  row.append(tools);
  }
- const select=$("quote-prospect"),current=select.value;select.replaceChildren(el("option","Sin prospecto vinculado"));
- select.firstChild.value="";
- for(const p of ps){const option=el("option",p.nombre+" · "+(p.distrito||"" ));option.value=p.id;select.append(option)}
- if([...select.options].some(o=>o.value===current))select.value=current;
+ fillSelect("quote-customer",customers,"Selecciona un cliente","id",c=>c.nombre+" · "+(c.zona||""));
+ fillSelect("quote-prospect",ps,"Sin prospecto vinculado","id",p=>p.nombre+" · "+(p.distrito||""));
+ updateQuoteEstimate();
   renderSalesAndCustomers(customers,vs,qu,eq);
  fillSelect("upload-media-client",customers,"Selecciona cliente","id",c=>c.nombre+" · "+(c.zona||""));
  refreshUploadEquipmentPicker();
@@ -496,14 +505,221 @@ $("prospect-form").addEventListener("submit",async e=>{
  const data={nombre:d.nombre.trim(),telefono:d.telefono.replace(/[()\s-]/g,"")||null,distrito:d.distrito||null,fuente:d.fuente,campana:d.campana||null,personas:numberOrNull(d.personas),necesidad:d.necesidad||null};
  try{await insert("prospectos",data);e.target.reset();await refresh();say("Prospecto registrado. Completa su seguimiento y cotización.");}catch(err){showErr(err,"Prospecto")}
 });
+// Precios publicados por ENERGÉTICOS en catálogo YACUSOL, verificados 08/11/2026.
+const YACUSOL_PRICES=Object.freeze({120:1700,150:1850,200:2550,250:2800,300:3550,400:4450,500:5700});
+const YACUSOL_EXTRAS=Object.freeze({
+ magnesio:{nombre:"Barra de magnesio",precio:80},
+ resistencia:{nombre:"Resistencia eléctrica de respaldo",precio:110},
+ valvula:{nombre:"Válvula termostática",precio:350},
+ tanque5:{nombre:"Tanque asistente 5 L",precio:150},
+ tanque10:{nombre:"Tanque asistente 10 L",precio:250},
+ controlador:{nombre:"Pantalla controladora electrónica TK",precio:450},
+ instalacion:{nombre:"Instalación básica en Huaraz",precio:200}
+});
+const QUOTE_ISSUERS={
+ ryc:{nombre:"Corporación R y C Contratistas Generales S.A.C.",ruc:"20533666273"},
+ personal:{nombre:"José Rafael Zeña Peche",ruc:"10176338216"}
+};
+const QUOTE_SOURCE="https://energeticos2023.github.io/YACUSOL/";
+const QUOTE_EXCLUSIONS=[
+ "Accesorios hidráulicos y consumibles: codos, válvulas de conexión y check, pegamentos, adaptadores y similares",
+ "Tanque asistente",
+ "Válvula termostática",
+ "Pantalla controladora electrónica",
+ "Instalación y conexión hidráulica",
+ "Transporte o flete"
+];
+const QUOTE_INCLUDED_REGULAR=["Termotanque YACUSOL baja presión","Tubos al vacío","Estructura de soporte del termotanque y los tubos"];
+const QUOTE_INCLUDED_NAVIDAD=[...QUOTE_INCLUDED_REGULAR,"Barra de magnesio","Resistencia eléctrica de respaldo"];
+function getQuoteState(){
+ const capacity=Number($("quote-capacity").value),amount=Number($("quote-quantity").value);
+ const promo=$("quote-package").value==="navidad_2026";
+ const selected=[...$("quote-extras").querySelectorAll('input[type="checkbox"]:checked')]
+  .map(x=>x.value).filter(x=>Object.hasOwn(YACUSOL_EXTRAS,x));
+ const chosen=selected.filter(id=>!(promo&&["magnesio","resistencia"].includes(id)));
+ const extras=chosen.map(id=>({id,nombre:YACUSOL_EXTRAS[id].nombre,precio:YACUSOL_EXTRAS[id].precio}));
+ const unitBase=YACUSOL_PRICES[capacity]||0;
+ const unitPrice=unitBase+extras.reduce((a,x)=>a+x.precio,0);
+ const included=promo?QUOTE_INCLUDED_NAVIDAD.slice():QUOTE_INCLUDED_REGULAR.slice();
+ for(const x of extras)included.push(x.nombre+" (adicional presupuestado)");
+ const exclusions=QUOTE_EXCLUSIONS.filter(x=>
+   !(x==="Tanque asistente"&&extras.some(e=>e.id.startsWith("tanque"))) &&
+   !(x==="Válvula termostática"&&extras.some(e=>e.id==="valvula")) &&
+   !(x==="Pantalla controladora electrónica"&&extras.some(e=>e.id==="controlador")) &&
+   !(x==="Instalación y conexión hidráulica"&&extras.some(e=>e.id==="instalacion")));
+ return {capacity,amount,promo,unitBase,unitPrice,extras,included,exclusions,total:Math.round(unitPrice*amount*100)/100};
+}
+function updateQuoteEstimate(){
+ const v=getQuoteState();
+ for(const input of $("quote-extras").querySelectorAll('input[type="checkbox"]')){
+   input.disabled=v.promo&&["magnesio","resistencia"].includes(input.value);
+   if(input.disabled)input.checked=false;
+ }
+ $("quote-live-total").textContent=v.unitPrice>0&&Number.isInteger(v.amount)&&v.amount>0?money(v.total):"Revisa capacidad y cantidad";
+}
+for(const id of ["quote-capacity","quote-quantity","quote-package"]){
+ $(id).addEventListener("change",updateQuoteEstimate);
+ $(id).addEventListener("input",updateQuoteEstimate);
+}
+$("quote-extras").addEventListener("change",e=>{
+ const value=e.target?.value;
+ if(value==="tanque5"&&e.target.checked)$("quote-extras").querySelector('input[value="tanque10"]').checked=false;
+ if(value==="tanque10"&&e.target.checked)$("quote-extras").querySelector('input[value="tanque5"]').checked=false;
+ updateQuoteEstimate();
+});
+$("quote-customer").addEventListener("change",()=>{if($("quote-customer").value)$("quote-prospect").value="";});
+$("quote-prospect").addEventListener("change",()=>{if($("quote-prospect").value)$("quote-customer").value="";});
+function quoteContact(q){
+ const customer=(state.records.clientes||[]).find(c=>c.id===q.cliente_id);
+ const prospect=(state.records.prospectos||[]).find(p=>p.id===q.prospecto_id);
+ return {name:customer?.nombre||prospect?.nombre||"",phone:customer?.telefono||prospect?.telefono||"",location:customer?.zona||prospect?.distrito||""};
+}
+function formatQuoteId(q){return (q.referencia||(q.estado==="borrador"?"BORRADOR · ":"REFERENCIA INTERNA · ")+String(q.id||"").slice(0,8).toUpperCase());}
+function quoteExtras(q){
+ return Array.isArray(q.adicionales)?q.adicionales.filter(x=>x&&x.nombre&&Number.isFinite(Number(x.precio))):[];
+}
+function quoteExclusions(q){
+ return Array.isArray(q.exclusiones)&&q.exclusiones.length?q.exclusiones:QUOTE_EXCLUSIONS;
+}
+function quoteIncluded(q){
+ return Array.isArray(q.componentes)&&q.componentes.length?q.componentes:QUOTE_INCLUDED_REGULAR;
+}
+function currentQuoteSnapshot(){
+ const data=Object.fromEntries(new FormData($("quote-form")));
+ const v=getQuoteState();
+ const emisor=QUOTE_ISSUERS[data.emisor];
+ if(!data.cliente_id&&!data.prospecto_id)throw new Error("Selecciona un cliente o un prospecto antes de cotizar.");
+ if(!emisor)throw new Error("Selecciona el emisor legal que realizará la venta.");
+ if(!Object.hasOwn(YACUSOL_PRICES,v.capacity)||!Number.isInteger(v.amount)||v.amount<1||v.amount>100)throw new Error("Selecciona una capacidad y cantidad válidas.");
+ if(!data.valido_hasta||data.valido_hasta<localToday())throw new Error("Especifica una fecha de vigencia válida.");
+ if(v.unitPrice<=0)throw new Error("El precio debe ser positivo.");
+ return {
+ cliente_id:data.cliente_id||null,prospecto_id:data.prospecto_id||null,
+ emisor_legal:emisor.nombre,ruc_emisor:emisor.ruc,
+ modelo:"Terma solar YACUSOL de baja presión "+v.capacity+" L",
+ capacidad_l:v.capacity,cantidad:v.amount,precio_unitario:v.unitPrice,precio_total:v.total,
+ moneda:"PEN",igv_incluido:true,modalidad:v.promo?"navidad_2026":"regular",
+ adicionales:v.extras.map(e=>({id:e.id,nombre:e.nombre,precio:e.precio})),
+ componentes:v.included,exclusiones:v.exclusions,
+ notas:data.notas?.trim()||null,valido_hasta:data.valido_hasta,
+ precio_fuente:QUOTE_SOURCE,precio_verificado_en:new Date().toISOString(),estado:"borrador"
+ };
+}
 $("quote-form").addEventListener("submit",async e=>{
  e.preventDefault();
  if(!["admin","ventas"].includes(state.role))return say("Tu rol no permite cotizar.");
- const d=Object.fromEntries(new FormData(e.target));
- const components=d.paquete==="navidad"?["Termotanque","Tubos","Estructura","Barra de magnesio","Resistencia eléctrica"]:["Termotanque","Tubos","Estructura"];
- const data={prospecto_id:d.prospecto_id||null,modelo:d.modelo.trim(),capacidad_l:numberOrNull(d.capacidad_l),precio_total:d.precio_total!==""?Number(d.precio_total):null,valido_hasta:d.valido_hasta||null,notas:d.notas||null,componentes:components,estado:"borrador"};
- try{await insert("cotizaciones",data);e.target.reset();await refresh();say("Borrador registrado. Verifica compatibilidad y condiciones comerciales antes de enviarlo.");}catch(err){showErr(err,"Cotización")}
+ const b=e.target.querySelector('button[type="submit"]');b.disabled=true;
+ try{
+  const data=currentQuoteSnapshot();
+  const results=await insert("cotizaciones",data);
+  if(!Array.isArray(results)||results.length!==1)throw new Error("No se confirmó el guardado de la cotización.");
+  const saved=results[0];
+  await refresh();previewQuotation(saved);
+  say("Cotización guardada en borrador. Comprueba alcance, PDF y cliente antes de compartir.");
+ }catch(err){showErr(err,"Cotización")}finally{b.disabled=false}
 });
+function quoteRowItem(desc,unit,qty,lineTotal){
+ const tr=el("tr");
+ for(const str of [desc,money(unit),String(qty),money(lineTotal)]){
+  const td=el("td",str);tr.append(td);
+ }
+ return tr;
+}
+function quoteSection(label,items){
+ const box=el("div",null,"quote-section");
+ box.append(el("h4",label));
+ const ul=el("ul");
+ for(const item of items)ul.append(el("li",item));
+ box.append(ul);return box;
+}
+function previewQuotation(q){
+ if(!q)return;
+ const root=$("quote-preview-content"),section=$("quote-print-sheet"),c=quoteContact(q);
+ root.replaceChildren();
+ const head=el("div",null,"quote-letterhead");
+ const brand=el("div",null,"quote-letter-brand");
+ brand.append(el("strong","ENERGÉTICOS · YACUSOL"),el("span","TERMAS SOLARES DE BAJA PRESIÓN"));
+ head.append(brand);
+ head.append(el("h2","COTIZACIÓN COMERCIAL"));
+ head.append(el("p",q.emisor_legal||"Emisor legal por definir"));
+ head.append(el("p",q.ruc_emisor?"RUC "+q.ruc_emisor:"RUC por definir"));
+ head.append(el("p","Contacto comercial: 942 899 919"));
+ root.append(head);
+ const meta=el("div",null,"quote-meta");
+ for(const pair of [
+  ["Referencia",formatQuoteId(q)],
+  ["Revisión","Rev. "+String(q.revision||0).padStart(2,"0")],
+  ["Fecha",fmtDate(q.creado_en||new Date().toISOString())],
+  ["Cliente",c.name||"Sin nombre"],
+  ["Zona",c.location||"No indicada"],
+  ["Válida hasta",fmtDate(q.valido_hasta)],
+  ["Moneda","Soles (PEN), incluye IGV"]
+ ]){
+  const item=el("div");item.append(el("strong",pair[0]+": "),el("span",pair[1]));meta.append(item);
+ }
+ root.append(meta);
+ const intro=el("p","De acuerdo con la solicitud del cliente, presentamos nuestra propuesta de suministro de una terma solar YACUSOL de baja presión, según el siguiente detalle.");
+ root.append(intro);
+ const table=el("table",null,"quote-table"),thead=el("thead"),header=el("tr");
+ for(const text of ["Descripción","Precio unitario","Cantidad","Importe"])header.append(el("th",text));
+ thead.append(header);table.append(thead);
+ const tbody=el("tbody");
+ const quantity=Number(q.cantidad||1),extra=quoteExtras(q);
+ const extrasTotal=extra.reduce((a,x)=>a+Number(x.precio),0);
+ const basicPrice=Number(q.precio_unitario||0)-extrasTotal;
+ tbody.append(quoteRowItem(q.modelo+(q.modalidad==="navidad_2026"?" · Promoción Navidad 2026":""),basicPrice,quantity,basicPrice*quantity));
+ for(const x of extra)tbody.append(quoteRowItem(x.nombre,Number(x.precio),quantity,Number(x.precio)*quantity));
+ table.append(tbody);root.append(table);
+ const total=el("div",null,"quote-sum");
+ total.append(el("strong","TOTAL PROPUESTA (IGV incluido)"),el("strong",money(q.precio_total)));
+ root.append(total);
+ root.append(quoteSection("Incluye",quoteIncluded(q)));
+ root.append(quoteSection("No incluye",quoteExclusions(q)));
+ if(q.notas)root.append(quoteSection("Condiciones particulares",[q.notas]));
+ root.append(quoteSection("Condiciones comerciales",[
+  "Vigencia hasta el "+fmtDate(q.valido_hasta)+".",
+  "Suministro, instalación y transporte sujetos al alcance indicado; los servicios excluidos requieren cotización específica.",
+  "Confirmar disponibilidad y plazo de entrega antes de aceptar la orden.",
+  q.estado==="borrador"?"BORRADOR: pendiente de emisión comercial.":"Estado registrado en la aplicación: "+q.estado+"."
+ ]));
+ root.append(el("p","Atentamente,"));
+ root.append(el("p",q.emisor_legal||"Emisor por definir"));
+ root.append(el("p","ENERGÉTICOS · YACUSOL · Atención comercial: 942 899 919"));
+ const actions=el("div",null,"quote-preview-actions");
+ const print=el("button","Imprimir / Guardar PDF");print.type="button";
+ print.addEventListener("click",()=>{document.body.classList.add("print-quote");window.print();});
+ const share=el("button","Abrir WhatsApp del cliente");share.type="button";
+ share.addEventListener("click",()=>shareQuoteByWhatsApp(q));
+ const close=el("button","Cerrar vista previa");close.type="button";
+ close.addEventListener("click",()=>{section.hidden=true;root.replaceChildren();});
+ actions.append(print,share,close);section.prepend(actions);
+ const oldActions=section.querySelectorAll(".quote-preview-actions");
+ for(const node of [...oldActions].slice(1))node.remove();
+ section.hidden=false;section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+window.addEventListener("afterprint",()=>document.body.classList.remove("print-quote"));
+function shareQuoteByWhatsApp(q){
+ const c=quoteContact(q);
+ const raw=(c.phone||"").replace(/[^\d]/g,"");
+ const phone=raw.length===9&&raw.startsWith("9")?"51"+raw:raw;
+ if(!/^[1-9]\d{9,14}$/.test(phone))return say("El cliente no tiene un WhatsApp válido. Registra o corrige su celular antes de compartir.");
+ if(!q.emisor_legal||!q.ruc_emisor||!q.valido_hasta||!q.precio_total)return say("Completa emisor, precio y vigencia antes de compartir la cotización.");
+ const extras=quoteExtras(q).map(x=>x.nombre+" (+ "+money(x.precio)+" c/u)");
+ const message=[
+  "Hola "+c.name+", le envío nuestra propuesta YACUSOL:",
+  q.modelo,
+  (q.modalidad==="navidad_2026"?"Promoción Navidad 2026":"Suministro regular")+" · Cantidad: "+(q.cantidad||1),
+  "Incluye: "+quoteIncluded(q).join(", ")+".",
+  extras.length?"Adicionales: "+extras.join("; ")+".":"",
+  "No incluye: "+quoteExclusions(q).join("; ")+".",
+  "Total (IGV incluido): "+money(q.precio_total)+".",
+  "Válida hasta: "+fmtDate(q.valido_hasta)+".",
+  "Emisor: "+q.emisor_legal+".",
+  "El documento PDF será compartido por separado; su preparación no constituye confirmación de venta."
+ ].filter(Boolean).join("\n");
+ window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(message),"_blank","noopener,noreferrer");
+ say("Se abrió WhatsApp con el mensaje listo. Adjunta el PDF manualmente y marca enviada solo después de verificar el envío.");
+}
 
 function renderChannelPerformance(prospects,quotes,sales,aggregates){
  const target=$("channel-performance");target.replaceChildren();
@@ -537,7 +753,7 @@ async function patchRecord(table,id,changes){
 }
 async function updateQuoteStatus(quote,status){
  if(!["admin","ventas"].includes(state.role))return;
- if(status==="enviada"&&(!quote.precio_total||quote.precio_total<=0))return say("La cotización necesita precio positivo y condiciones comerciales verificadas.");
+ if(status==="enviada"&&(!quote.precio_total||quote.precio_total<=0||!quote.emisor_legal||!quote.ruc_emisor||!quote.valido_hasta))return say("Para confirmar el envío se requiere emisor legal, precio positivo y vigencia definida.");
  const confirmed=window.confirm(status==="enviada"?"Confirma que la cotización se envió realmente al cliente, fuera de la aplicación.":"Confirma que el cliente aceptó explícitamente la propuesta.");
  if(!confirmed)return;
  try{

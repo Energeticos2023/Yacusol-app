@@ -96,23 +96,74 @@
       </section>
 
       <section id="tab-cotizaciones" class="tab-pane" hidden>
-        <div class="section-head"><div><h2>Cotizaciones</h2><p>Identifica cuántas consultas terminan en presupuestos y ventas.</p></div></div>
+        <div class="section-head"><div><h2>Cotizaciones YACUSOL</h2><p>Precios oficiales, alcance comprobable y comunicación directa con el cliente.</p></div></div>
         <div class="two-col">
           <article class="panel">
-            <h3>Nueva cotización</h3>
+            <h3>Preparar nueva cotización</h3>
             <form id="quote-form" class="form-grid">
-              <label class="wide">Prospecto <select name="prospecto_id" id="quote-prospect"><option value="">Sin prospecto vinculado</option></select></label>
-              <label>Modelo / línea <input name="modelo" required placeholder="Terma solar YACUSOL"></label>
-              <label>Capacidad (L) <input type="number" min="1" name="capacidad_l"></label>
-              <label>Precio (S/) <input type="number" min="0" step="0.01" name="precio_total" placeholder="A definir"></label>
-              <label>Validez hasta <input type="date" name="valido_hasta"></label>
-              <label class="wide">Paquete comercial <select id="quote-package" name="paquete"><option value="regular">Regular: tanque, tubos y estructura</option><option value="navidad">Navidad 2026: + barra de magnesio y resistencia eléctrica</option></select></label>
-              <label class="wide">Condiciones y alcance <textarea name="notas" rows="2" placeholder="Indicar accesorios, instalación, transporte y condiciones aplicables"></textarea></label>
-              <button class="primary wide" type="submit">Guardar borrador</button>
+              <label class="wide">Cliente registrado
+                <select id="quote-customer" name="cliente_id"><option value="">Sin cliente seleccionado</option></select>
+              </label>
+              <label class="wide">Prospecto, si todavía no es cliente
+                <select id="quote-prospect" name="prospecto_id"><option value="">Sin prospecto seleccionado</option></select>
+              </label>
+              <label class="wide">Emisor legal de la cotización
+                <select id="quote-issuer" name="emisor" required>
+                  <option value="">Selecciona quien emitirá el comprobante</option>
+                  <option value="ryc">Corporación R y C Contratistas Generales S.A.C. · RUC 20533666273</option>
+                  <option value="personal">José Rafael Zeña Peche · RUC 10176338216</option>
+                </select>
+              </label>
+              <label class="wide">Terma solar YACUSOL, baja presión
+                <select id="quote-capacity" name="capacidad_l" required>
+                  <option value="120">120 litros · S/ 1,700.00</option>
+                  <option value="150">150 litros · S/ 1,850.00</option>
+                  <option value="200">200 litros · S/ 2,550.00</option>
+                  <option value="250">250 litros · S/ 2,800.00</option>
+                  <option value="300">300 litros · S/ 3,550.00</option>
+                  <option value="400">400 litros · S/ 4,450.00</option>
+                  <option value="500">500 litros · S/ 5,700.00</option>
+                </select>
+              </label>
+              <label>Cantidad de termas <input id="quote-quantity" name="cantidad" type="number" min="1" max="100" value="1" required></label>
+              <label>Vigencia hasta <input id="quote-expiration" type="date" name="valido_hasta" required></label>
+              <label class="wide">Alcance del suministro
+                <select id="quote-package" name="paquete">
+                  <option value="navidad_2026">Promoción Navidad 2026 · + barra de magnesio y resistencia incluidos</option>
+                  <option value="regular">Terma regular · termotanque, tubos y estructura</option>
+                </select>
+              </label>
+              <div class="wide">
+                <strong>Adicionales opcionales (no se cobran si ya están incluidos)</strong>
+                <div id="quote-extras" class="quote-extra-grid">
+                  <label><input type="checkbox" value="magnesio"> Barra de magnesio · S/ 80</label>
+                  <label><input type="checkbox" value="resistencia"> Resistencia eléctrica · S/ 110</label>
+                  <label><input type="checkbox" value="valvula"> Válvula termostática · S/ 350</label>
+                  <label><input type="checkbox" value="tanque5"> Tanque asistente 5 L · S/ 150</label>
+                  <label><input type="checkbox" value="tanque10"> Tanque asistente 10 L · S/ 250</label>
+                  <label><input type="checkbox" value="controlador"> Controlador electrónico TK · S/ 450</label>
+                  <label><input type="checkbox" value="instalacion"> Instalación básica, Huaraz · S/ 200</label>
+                </div>
+              </div>
+              <label class="wide">Condiciones particulares <textarea id="quote-notes" name="notas" rows="3" maxlength="3000" placeholder="Plazo de entrega, ubicación, condiciones de suministro u otras condiciones acordadas"></textarea></label>
+              <div class="wide quote-calculation" role="status" aria-live="polite">
+                <span>Precio final con IGV (según selección)</span>
+                <strong id="quote-live-total">S/ 1,700.00</strong>
+                <small>La tarifa publicada se conserva como referencia; confirma disponibilidad y vigencia antes de enviar.</small>
+              </div>
+              <button type="submit" class="primary wide">Guardar cotización en borrador</button>
             </form>
+            <p class="muted small section-gap">Los valores base proceden de la lista oficial pública YACUSOL. Una cotización guardada conserva sus precios y componentes. No modifica el catálogo público.</p>
           </article>
-          <article class="panel"><h3>Cotizaciones registradas</h3><div id="quote-list" class="records"></div></article>
+          <article class="panel">
+            <h3>Cotizaciones registradas</h3>
+            <div id="quote-list" class="records"></div>
+            <p class="muted small section-gap">Después de preparar el PDF y compartirlo, marca «Enviada» solo si realmente lo has enviado. WhatsApp no adjunta automáticamente el PDF.</p>
+          </article>
         </div>
+        <article id="quote-print-sheet" class="quote-document panel section-gap" hidden aria-label="Cotización para imprimir">
+          <div id="quote-preview-content"></div>
+        </article>
       </section>
 
       <section id="tab-clientes" class="tab-pane" hidden>
