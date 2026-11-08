@@ -47,3 +47,13 @@ Fase 4: cotizaciones PDF, OCR opcional con consentimiento, optimización y previ
 5. Un equipo genera próxima fecha de mantenimiento con reglas verificables, sin mensaje de WhatsApp enviado automáticamente.
 6. Una publicidad solo puede usar un asset cuando original verificado y marketing aprobado.
 7. El proyecto actual y el calendario Metricool hasta 16/11/2026 quedan sin modificaciones.
+
+
+## ESTADO VERIFICADO AL 08/11/2026 - ACTUALIZACION
+- Las tablas public.prospectos, public.cotizaciones, public.media_assets ya fueron creadas exitosamente en Supabase YACUSOL_Gestion por migración `yacusol_control360_crm_cotizaciones_media_20261108` y verificadas en list_tables con RLS habilitado.
+- Bucket privado yacusol-media creado y verificado, maximo 50 MB JPG/PNG/WebP/MP4; políticas de SELECT e INSERT restringidas por rol.
+- Se añadieron índices de relaciones para escalabilidad y unicidad de venta por cotización con migración `yacusol_control360_indices_conversion_20261108`.
+- Interfaz ampliada: alta clientes, prospectos, cotizaciones, aceptar/enviar estado con confirmación explícita, registrar venta borrador, solo administrador puede marcar confirmada, registrar equipos, mantenimiento real, atribución por fuente.
+- Prueba de lógica Javascript con DOM simulado pasó y cálculo de mantenimiento verificó 2026-02-28 y 2024-02-29. Esto NO es una prueba E2E con autenticación real, que falta.
+- Continúan cero usuarios en Auth; usuario administrador previsto: energeticos.ryc@gmail.com. Requiere invitación segura y asignación de `raw_app_meta_data.yacusol_role=admin` por operador autorizado.
+- Se mantiene pendiente integración privada IA-Storage y sincronización real con WhatsApp/Metricool. Sin acceso a la cuenta no se pueden completar pruebas de login/upload.
