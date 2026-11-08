@@ -38,6 +38,16 @@ const vSchema=read("album-tecnico-servicios.sql");
 assert(vSchema.includes("foreign key (mantenimiento_id,equipo_id)"),"No se protege vínculo fotos-servicio");
 assert(css.includes("@media print"),"No existe ficha imprimible");
 
+for(const id of ["quote-form","quote-customer","quote-prospect","quote-issuer","quote-capacity","quote-quantity","quote-expiration","quote-extras","quote-package","quote-live-total","quote-print-sheet","quote-preview-content"]){
+ assert(html.includes('id="'+id+'"'),"Falta control de cotización "+id);
+}
+assert(js.includes("YACUSOL_PRICES"),"Falta catalogo con precios oficiales");
+assert(js.includes("QUOTE_EXCLUSIONS"),"Faltan exclusiones comerciales");
+assert(js.includes("shareQuoteByWhatsApp"),"Falta abrir WhatsApp del cliente");
+assert(js.includes("print-quote"),"Falta documento imprimible");
+assert(css.includes(".quote-table")&&css.includes("body.print-quote"),"Falta formato del documento");
+const quoteSql=read("cotizador-esquema.sql");
+assert(quoteSql.includes("precio_verificado_en")&&quoteSql.includes("emisor_legal")&&quoteSql.includes("cantidad"),"Falta respaldo de cotizacion verificada");
 assert(css.includes(".maintenance-actions"), "Faltan estilos de acciones");
 const editSchema=read("mantenimiento-edicion-segura.sql");
 assert(editSchema.includes("motivo_anulacion")&&editSchema.includes("motivo_archivo"), "Faltan motivos de auditoría");
@@ -46,8 +56,8 @@ const map=new Map();
 const element=id=>{ if(!map.has(id))map.set(id,{id,value:"",textContent:"",hidden:false,addEventListener(){},setAttribute(){},replaceChildren(){},append(){},classList:{toggle(){}},querySelector(){return {disabled:false}},options:[],firstChild:null});return map.get(id)};
 const fakeDocument={getElementById:element,querySelectorAll(){return []},querySelector(){return element("q")},createElement:element};
 const fakeSession={getItem(){return null},setItem(){},removeItem(){}};
-const run=new Function("document","window","sessionStorage","fetch","File","Blob","crypto","URL",js+"\nreturn {state,localToday,addMonths,dueItems};");
-const app=run(fakeDocument,{crypto:{subtle:{}}},fakeSession,()=>{},class{},class{},{},class{});
+const run=new Function("document","window","sessionStorage","fetch","File","Blob","crypto","URL",js+"\nreturn {state,localToday,addMonths,dueItems,getQuoteState,QUOTE_INCLUDED_NAVIDAD,YACUSOL_PRICES};");
+const app=run(fakeDocument,{crypto:{subtle:{}},addEventListener(){}},fakeSession,()=>{},class{},class{},{},class{});
 assert.equal(app.addMonths("2026-01-31",1).toISOString().slice(0,10),"2026-02-28");
 assert.equal(app.addMonths("2024-01-31",1).toISOString().slice(0,10),"2024-02-29");
 app.state.records.equipos=[{id:"t1",modelo:"YACUSOL",capacidad_l:200,instalado_el:"2025-11-08",intervalo_meses:12}];
@@ -60,4 +70,16 @@ app.state.records.mantenimientos=[{equipo_id:"t1",fecha_realizada:"2026-11-01",a
 assert.equal(app.dueItems()[0].date,"2026-11-08","Mantenimientos anulados no afectan próxima revisión");
 app.state.records.mantenimientos[0].anulado=false;
 assert.equal(app.dueItems()[0].date,"2027-11-01","Servicios válidos renuevan vencimiento");
+element("quote-capacity").value="120";
+element("quote-quantity").value="1";
+element("quote-package").value="navidad_2026";
+element("quote-extras").querySelectorAll=()=>[];
+assert.equal(app.getQuoteState().total,1700,"El modelo 120 L promocional debe costar S/ 1700");
+assert(app.QUOTE_INCLUDED_NAVIDAD.includes("Barra de magnesio"),"La promoción debe incluir barra de magnesio");
+assert(app.QUOTE_INCLUDED_NAVIDAD.includes("Resistencia eléctrica de respaldo"),"La promoción debe incluir resistencia eléctrica");
+element("quote-extras").querySelectorAll=()=>[{value:"magnesio",checked:true},{value:"resistencia",checked:true},{value:"valvula",checked:true}];
+assert.equal(app.getQuoteState().total,2050,"No se deben cobrar barra y resistencia dos veces");
+element("quote-extras").querySelectorAll=()=>[];
+element("quote-capacity").value="400";element("quote-quantity").value="2";
+assert.equal(app.getQuoteState().total,8900,"Total de 2 termas YACUSOL 400 L");
 console.log("Control360 QA: OK. IDs="+references.length+"; JS, DOM, marcas, seguridad e intervalos de mantenimiento.");
