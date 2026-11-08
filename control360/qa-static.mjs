@@ -5,8 +5,12 @@ const root = new URL("./", import.meta.url);
 const read = name => fs.readFileSync(new URL(name, root), "utf8");
 const html=read("index.html"), js=read("app.js"), css=read("styles.css"), sql=read("schema-propuesta.sql");
 new vm.Script(js, {filename:"app.js"});
-const references=[...new Set([...js.matchAll(/\\$\\("([a-z0-9-]+)"\\)/g)].map(x=>x[1]))];
-for(const id of references) assert(html.includes('id="'+id+'"'), 'Falta ID '+id);
+const references=[...new Set([...js.matchAll(/\$\("([a-z0-9-]+)"\)/g)].map(x=>x[1]))];
+assert(references.length>=70,"Falla de reconocimiento: no se detectaron las referencias reales al DOM");
+function missingFrom(markup) {return references.filter(id=>!markup.includes('id="'+id+'"'));}
+assert.deepEqual(missingFrom(html),[],"Referencias de IDs inexistentes en la interfaz");
+const sabotage=html.replace('id="'+references[0]+'"','id="id-simulado-para-test"');
+assert(missingFrom(sabotage).includes(references[0]),"El test no falla al eliminar un control real");
 for(const id of ["login-form","prospect-form","quote-form","customer-form","edit-customer-form","sale-form","equipment-form","maintenance-form","maintenance-edit-form","equipment-edit-form","maintenance-filter","maintenance-edit-client","media-form","channel-performance","client-directory","media-gallery","client-search","album-filter","kpi-clientes","kpi-instalaciones","upload-media-client"]) assert(html.includes('id="'+id+'"'), 'Falta interfaz '+id);
 assert(html.includes('script-src \'self\''), "No se reconoce CSP restrictivo");
 assert(js.includes("sb_publishable_"), "Clave publicable no configurada");
