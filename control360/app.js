@@ -99,7 +99,7 @@ document.querySelectorAll(".nav [data-tab]").forEach(button=>button.addEventList
  state.tab=button.dataset.tab;
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b===button));
  document.querySelectorAll(".tab-pane").forEach(p=>p.hidden=p.id!=="tab-"+state.tab);
- const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",cotizaciones:"Cotizaciones",media:"Fotos y videos",mantenimiento:"Mantenimiento",campanas:"Campañas"};
+ const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Fotos y videos",mantenimiento:"Mantenimiento",campanas:"Campañas"};
  $("page-heading").textContent=titles[state.tab];
  clearNotice();
 }));
@@ -110,6 +110,7 @@ async function refresh(){
  // Una tabla todavía no migrada puede fallar: los demás módulos siguen visibles.
  const specs=[
   ["prospectos",()=>list("prospectos")],
+  ["clientes",()=>list("clientes")],
   ["cotizaciones",()=>list("cotizaciones")],
   ["media_assets",()=>list("media_assets")],
   ["ventas",()=>listRaw("ventas","creado_en.desc")],
@@ -135,10 +136,10 @@ function recordLine(container,title,subtitle,badge,mode){
  return item;
 }
 function renderAll(){
- const ps=state.records.prospectos||[],qu=state.records.cotizaciones||[],vs=state.records.ventas||[],eq=state.records.equipos||[],media=state.records.media_assets||[];
+ const ps=state.records.prospectos||[],qu=state.records.cotizaciones||[],vs=state.records.ventas||[],eq=state.records.equipos||[],media=state.records.media_assets||[],customers=state.records.clientes||[];
  $("kpi-prospectos").textContent=count("prospectos");
  $("kpi-cotizaciones").textContent=state.records.cotizaciones===null?"—":String(qu.filter(x=>["enviada","aceptada"].includes(x.estado)).length);
- $("kpi-ventas").textContent=count("ventas");
+ $("kpi-ventas").textContent=state.records.ventas===null?"—":String(vs.filter(v=>v.estado==="confirmada").length);
  const due=dueItems();
  $("kpi-mantenimientos").textContent=state.records.equipos===null?"—":String(due.filter(x=>x.days<=30).length);
  const f=$("funnel");f.replaceChildren();
@@ -156,16 +157,27 @@ function renderAll(){
  const pl=$("prospect-list");pl.replaceChildren();
  for(const p of ps.slice(0,80))recordLine(pl,p.nombre,(p.distrito||"Zona no registrada")+" · "+(p.fuente||"manual")+" · "+fmtDate(p.creado_en),p.etapa,p.etapa==="ganado"?"success":"");
  const ql=$("quote-list");ql.replaceChildren();
- for(const q of qu.slice(0,80))recordLine(ql,(q.referencia||q.modelo),money(q.precio_total)+" · "+fmtDate(q.creado_en),q.estado,q.estado==="aceptada"?"success":"");
+ for(const q of qu.slice(0,80)){
+  const row=recordLine(ql,(q.referencia||q.modelo),money(q.precio_total)+" · "+fmtDate(q.creado_en),q.estado,q.estado==="aceptada"?"success":"");
+  if(["admin","ventas"].includes(state.role)&&q.estado==="borrador"){
+   const b=el("button","Marcar cotización enviada");
+   b.addEventListener("click",()=>updateQuoteStatus(q,"enviada"));row.append(b);
+  }else if(["admin","ventas"].includes(state.role)&&q.estado==="enviada"){
+   const b=el("button","Registrar aceptación confirmada");
+   b.addEventListener("click",()=>updateQuoteStatus(q,"aceptada"));row.append(b);
+  }
+ }
  const select=$("quote-prospect"),current=select.value;select.replaceChildren(el("option","Sin prospecto vinculado"));
  select.firstChild.value="";
  for(const p of ps){const option=el("option",p.nombre+" · "+(p.distrito||"" ));option.value=p.id;select.append(option)}
  if([...select.options].some(o=>o.value===current))select.value=current;
+ renderSalesAndCustomers(customers,vs,qu,eq);
  renderMedia(media);
  const ml=$("maintenance-list");ml.replaceChildren();
  for(const m of (state.records.mantenimientos||[]).slice(0,50))recordLine(ml,"Servicio "+fmtDate(m.fecha_realizada),(m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones"),"Realizado","success");
  const eql=$("equipment-list");eql.replaceChildren();
  for(const x of due.slice(0,80))recordLine(eql,x.modelo+" "+(x.capacidad_l||"")+" L","Próxima revisión: "+fmtDate(x.date)+" · "+x.days+" días",x.days<0?"Vencido":x.days<=30?"Próximo":"Programado",x.days<=30?"warning":"");
+ for(const x of eq.filter(x=>!x.instalado_el).slice(0,30))recordLine(eql,x.modelo+" "+x.capacidad_l+" L","Fecha de instalación pendiente","Pendiente","warning");
  if(state.records.equipos===null)empty(eql,"No disponible: revisa permisos o conexión.");
 }
 function addMonths(base,months){
@@ -200,6 +212,104 @@ $("quote-form").addEventListener("submit",async e=>{
  const data={prospecto_id:d.prospecto_id||null,modelo:d.modelo.trim(),capacidad_l:numberOrNull(d.capacidad_l),precio_total:d.precio_total!==""?Number(d.precio_total):null,valido_hasta:d.valido_hasta||null,notas:d.notas||null,componentes:components,estado:"borrador"};
  try{await insert("cotizaciones",data);e.target.reset();await refresh();say("Borrador registrado. Verifica compatibilidad y condiciones comerciales antes de enviarlo.");}catch(err){showErr(err,"Cotización")}
 });
+
+async function patchRecord(table,id,changes){
+ const result=await api("/rest/v1/"+table+"?id=eq."+encodeURIComponent(id),{method:"PATCH",body:changes,headers:{"Prefer":"return=representation"}});
+ if(!Array.isArray(result)||result.length!==1)throw new Error("No se confirmó el cambio: revisa permisos y estado del registro.");
+ return result[0];
+}
+async function updateQuoteStatus(quote,status){
+ if(!["admin","ventas"].includes(state.role))return;
+ if(status==="enviada"&&(!quote.precio_total||quote.precio_total<=0))return say("La cotización necesita precio positivo y condiciones comerciales verificadas.");
+ const confirmed=window.confirm(status==="enviada"?"Confirma que la cotización se envió realmente al cliente, fuera de la aplicación.":"Confirma que el cliente aceptó explícitamente la propuesta.");
+ if(!confirmed)return;
+ try{
+  const changes=status==="enviada"?{estado:"enviada",enviada_en:new Date().toISOString()}:{estado:"aceptada",aceptada_en:new Date().toISOString()};
+  await patchRecord("cotizaciones",quote.id,changes);await refresh();
+  say("Estado verificado: "+status+". El cambio no envía mensajes por WhatsApp.");
+ }catch(err){showErr(err,"Cotización")}
+}
+function fillSelect(id,items,placeholder,valueKey,labelFn,filterFn=()=>true){
+ const select=$(id),current=select.value;select.replaceChildren();
+ const first=el("option",placeholder);first.value="";select.append(first);
+ for(const item of items.filter(filterFn)){
+  const o=el("option",labelFn(item));o.value=item[valueKey];select.append(o);
+ }
+ if(Array.from(select.options).some(o=>o.value===current))select.value=current;
+}
+function renderSalesAndCustomers(customers,sales,quotes,equipment){
+ const list=$("customer-list");list.replaceChildren();
+ for(const c of customers.slice(0,30))recordLine(list,c.nombre,(c.zona||"Sin distrito")+" · "+(c.telefono||"Sin teléfono"));
+ fillSelect("sale-customer",customers,"Selecciona cliente","id",x=>x.nombre);
+ fillSelect("equipment-customer",customers,"Selecciona cliente","id",x=>x.nombre);
+ fillSelect("sale-quote",quotes,"Sin cotización asociada","id",x=>x.modelo+" · "+money(x.precio_total),x=>x.estado==="aceptada");
+ fillSelect("equipment-sale",sales,"Sin venta vinculada","id",x=>(x.referencia||x.id.slice(0,8))+" · "+money(x.monto_total),x=>x.estado==="confirmada");
+ fillSelect("maintenance-equipment",equipment,"Selecciona equipo","id",x=>x.modelo+" "+x.capacidad_l+" L · "+(x.serie||x.id.slice(0,8)));
+ const target=$("sales-list");target.replaceChildren();
+ for(const v of sales.slice(0,80)){
+  const owner=customers.find(c=>c.id===v.cliente_id);
+  const row=recordLine(target,owner?.nombre||"Cliente",money(v.monto_total)+" · "+fmtDate(v.fecha)+" · "+(v.referencia||"Sin referencia"),v.estado,v.estado==="confirmada"?"success":"warning");
+  if(state.role==="admin"&&v.estado==="borrador"){
+   const b=el("button","Confirmar venta");
+   b.addEventListener("click",()=>confirmSale(v));row.append(b);
+  }
+ }
+ if(state.role==="tecnico"){
+  for(const id of ["customer-form","sale-form","equipment-form"])$(id).hidden=true;
+ }
+ if(state.role==="ventas"){
+  $("maintenance-form").hidden=true;
+ }
+}
+async function confirmSale(sale){
+ if(state.role!=="admin")return;
+ if(!sale.monto_total||sale.monto_total<=0)return say("Falta el monto de venta real.");
+ if(!window.confirm("¿Existe evidencia documental de que la venta se cerró? No confirmar simples reservas o cotizaciones."))return;
+ try{await patchRecord("ventas",sale.id,{estado:"confirmada"});await refresh();say("Venta confirmada y contabilizada.");}
+ catch(e){showErr(e,"Confirmación de venta")}
+}
+$("customer-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!["admin","ventas"].includes(state.role))return say("No autorizado.");
+ const d=Object.fromEntries(new FormData(e.target));
+ try{
+  await insert("clientes",{nombre:d.nombre.trim(),telefono:d.telefono.replace(/[()\s-]/g,"")||null,zona:d.zona||null});
+  e.target.reset();await refresh();say("Cliente registrado.");
+ }catch(err){showErr(err,"Cliente")}
+});
+$("sale-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!["admin","ventas"].includes(state.role))return say("No autorizado.");
+ const d=Object.fromEntries(new FormData(e.target));
+ if(!d.cliente_id||!d.fecha||Number(d.monto_total)<=0)return say("Completa cliente, fecha y monto válido.");
+ if(d.cotizacion_id){
+  const q=(state.records.cotizaciones||[]).find(q=>q.id===d.cotizacion_id);
+  if(!q||q.estado!=="aceptada")return say("Solo se puede vincular una cotización aceptada.");
+ }
+ try{
+  await insert("ventas",{cliente_id:d.cliente_id,cotizacion_id:d.cotizacion_id||null,fecha:d.fecha,monto_total:Number(d.monto_total),referencia:d.referencia||null,estado:"borrador"});
+  e.target.reset();await refresh();say("Venta registrada en borrador. Un administrador debe verificarla y confirmarla.");
+ }catch(err){showErr(err,"Venta")}
+});
+$("equipment-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!["admin","ventas"].includes(state.role))return say("No autorizado.");
+ const d=Object.fromEntries(new FormData(e.target));
+ const sale=(state.records.ventas||[]).find(v=>v.id===d.venta_id);
+ if(sale&&(sale.estado!=="confirmada"||sale.cliente_id!==d.cliente_id))return say("La venta seleccionada debe estar confirmada y corresponder al cliente.");
+ if(d.instalado_el&&d.instalado_el>localToday())return say("No registres como realizada una instalación futura.");
+ try{
+  await insert("equipos",{cliente_id:d.cliente_id,venta_id:d.venta_id||null,modelo:d.modelo.trim(),capacidad_l:Number(d.capacidad_l),serie:d.serie||null,instalado_el:d.instalado_el||null,intervalo_meses:Number(d.intervalo_meses)});
+  e.target.reset();await refresh();say("Equipo registrado. Próximo mantenimiento calculado según fecha de instalación.");
+ }catch(err){showErr(err,"Instalación")}
+});
+$("maintenance-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!["admin","tecnico"].includes(state.role))return say("No autorizado.");
+ const d=Object.fromEntries(new FormData(e.target));
+ if(!d.equipo_id||!d.fecha_realizada||d.fecha_realizada>localToday())return say("El servicio debe corresponder a un equipo y una fecha realizada.");
+ try{
+  await insert("mantenimientos",{equipo_id:d.equipo_id,fecha_realizada:d.fecha_realizada,tipo:d.tipo,observaciones:d.observaciones||null});
+  e.target.reset();await refresh();say("Servicio registrado; se ha actualizado el cálculo de próxima revisión.");
+ }catch(err){showErr(err,"Mantenimiento")}
+});
+
 async function sha256(file){
  if(!window.crypto?.subtle)throw new Error("El navegador debe usar HTTPS para verificar la huella del original.");
  const buffer=await file.arrayBuffer();
