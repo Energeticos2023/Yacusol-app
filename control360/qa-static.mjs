@@ -7,7 +7,7 @@ const html=read("index.html"), js=read("app.js"), css=read("styles.css"), sql=re
 new vm.Script(js, {filename:"app.js"});
 const references=[...new Set([...js.matchAll(/\\$\\("([a-z0-9-]+)"\\)/g)].map(x=>x[1]))];
 for(const id of references) assert(html.includes('id="'+id+'"'), 'Falta ID '+id);
-for(const id of ["login-form","prospect-form","quote-form","customer-form","edit-customer-form","sale-form","equipment-form","maintenance-form","media-form","channel-performance","client-directory","media-gallery","client-search","album-filter","kpi-clientes","kpi-instalaciones","upload-media-client"]) assert(html.includes('id="'+id+'"'), 'Falta interfaz '+id);
+for(const id of ["login-form","prospect-form","quote-form","customer-form","edit-customer-form","sale-form","equipment-form","maintenance-form","maintenance-edit-form","equipment-edit-form","maintenance-filter","maintenance-edit-client","media-form","channel-performance","client-directory","media-gallery","client-search","album-filter","kpi-clientes","kpi-instalaciones","upload-media-client"]) assert(html.includes('id="'+id+'"'), 'Falta interfaz '+id);
 assert(html.includes('script-src \'self\''), "No se reconoce CSP restrictivo");
 assert(js.includes("sb_publishable_"), "Clave publicable no configurada");
 assert(!js.includes("service_role")&&!js.includes("sb_secret_"), "Credencial secreta en frontend");
@@ -18,6 +18,14 @@ assert(css.includes(".album-grid"), "No hay estilo de galería privada");
 assert(js.includes("renderCustomerDirectory"), "No hay directorio de clientes");
 assert(js.includes("renderGallery"), "No hay álbum visual");
 assert(js.includes("signedLink"), "La galería no utiliza URL temporal");
+assert(js.includes("tel:"), "No hay enlace para llamadas");
+assert(js.includes("https://wa.me/"), "No hay enlace WhatsApp");
+assert(js.includes("toggleEquipmentArchive"), "No hay archivo seguro de equipos");
+assert(js.includes("annulMaintenance"), "No hay anulación segura");
+assert(css.includes(".maintenance-actions"), "Faltan estilos de acciones");
+const editSchema=read("mantenimiento-edicion-segura.sql");
+assert(editSchema.includes("motivo_anulacion")&&editSchema.includes("motivo_archivo"), "Faltan motivos de auditoría");
+
 const map=new Map();
 const element=id=>{ if(!map.has(id))map.set(id,{id,value:"",textContent:"",hidden:false,addEventListener(){},setAttribute(){},replaceChildren(){},append(){},classList:{toggle(){}},querySelector(){return {disabled:false}},options:[],firstChild:null});return map.get(id)};
 const fakeDocument={getElementById:element,querySelectorAll(){return []},querySelector(){return element("q")},createElement:element};
@@ -29,4 +37,11 @@ assert.equal(app.addMonths("2024-01-31",1).toISOString().slice(0,10),"2024-02-29
 app.state.records.equipos=[{id:"t1",modelo:"YACUSOL",capacidad_l:200,instalado_el:"2025-11-08",intervalo_meses:12}];
 app.state.records.mantenimientos=[];
 assert.equal(app.dueItems()[0].date,"2026-11-08");
+app.state.records.equipos[0].activo=false;
+assert.equal(app.dueItems().length,0,"Los equipos archivados no deben tener cita pendiente");
+app.state.records.equipos[0].activo=true;
+app.state.records.mantenimientos=[{equipo_id:"t1",fecha_realizada:"2026-11-01",anulado:true}];
+assert.equal(app.dueItems()[0].date,"2026-11-08","Mantenimientos anulados no afectan próxima revisión");
+app.state.records.mantenimientos[0].anulado=false;
+assert.equal(app.dueItems()[0].date,"2027-11-01","Servicios válidos renuevan vencimiento");
 console.log("Control360 QA: OK. IDs="+references.length+"; JS, DOM, marcas, seguridad e intervalos de mantenimiento.");

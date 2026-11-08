@@ -162,7 +162,7 @@ function recordLine(container,title,subtitle,badge,mode){
 function renderAll(){
  const ps=state.records.prospectos||[],qu=state.records.cotizaciones||[],vs=state.records.ventas||[],eq=state.records.equipos||[],media=state.records.media_assets||[],customers=state.records.clientes||[];
  $("kpi-clientes").textContent=count("clientes");
- $("kpi-instalaciones").textContent=state.records.equipos===null?"—":String(eq.filter(x=>Boolean(x.instalado_el)).length);
+ $("kpi-instalaciones").textContent=state.records.equipos===null?"—":String(eq.filter(x=>x.activo!==false&&Boolean(x.instalado_el)).length);
  $("kpi-prospectos").textContent=count("prospectos");
  $("kpi-cotizaciones").textContent=state.records.cotizaciones===null?"—":String(qu.filter(x=>["enviada","aceptada"].includes(x.estado)).length);
  $("kpi-ventas").textContent=state.records.ventas===null?"—":String(vs.filter(v=>v.estado==="confirmada").length);
@@ -178,7 +178,7 @@ function renderAll(){
  const pri=$("priorities");pri.replaceChildren();
  const todo=ps.filter(x=>x.etapa!=="ganado"&&x.etapa!=="perdido").sort((a,b)=>String(a.siguiente_contacto||a.creado_en).localeCompare(String(b.siguiente_contacto||b.creado_en))).slice(0,4);
  for(const p of todo)recordLine(pri,p.nombre,(p.distrito||"Distrito pendiente")+" · "+p.etapa,"Seguimiento");
- if(due.length)recordLine(pri,"Revisiones de mantenimiento",due.filter(x=>x.days<=30).length+" equipos próximos o vencidos","Posventa","warning");
+ if(due.some(x=>x.days<=30))recordLine(pri,"Revisiones de mantenimiento",due.filter(x=>x.days<=30).length+" equipos próximos o vencidos","Posventa","warning");
  if(!pri.children.length)pri.append(el("p","Sin acciones registradas.","muted"));
  const pl=$("prospect-list");pl.replaceChildren();
  for(const p of ps.slice(0,80)){
@@ -216,16 +216,132 @@ function renderAll(){
  renderCustomerDirectory(customers,eq);
  renderMedia(media);
  renderChannelPerformance(ps,qu,vs,state.records.embudo_campana);
- const ml=$("maintenance-list");ml.replaceChildren();
- for(const m of (state.records.mantenimientos||[]).slice(0,50))recordLine(ml,"Servicio "+fmtDate(m.fecha_realizada),(m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones"),"Realizado","success");
- const eql=$("equipment-list");eql.replaceChildren();
- for(const x of due.slice(0,80)){
-  const customer=customers.find(c=>c.id===x.cliente_id);
-  recordLine(eql,(customer?.nombre||"Cliente sin identificar")+" · "+x.modelo+" "+(x.capacidad_l||"")+" L","Próxima revisión: "+fmtDate(x.date)+" · "+(x.days<0?"vencido hace "+Math.abs(x.days)+" días":"en "+x.days+" días"),x.days<0?"Vencido":x.days<=30?"Próximo":"Programado",x.days<=30?"warning":"");
- }
- for(const x of eq.filter(x=>!x.instalado_el).slice(0,30))recordLine(eql,x.modelo+" "+x.capacidad_l+" L","Fecha de instalación pendiente","Pendiente","warning");
- if(state.records.equipos===null)empty(eql,"No disponible: revisa permisos o conexión.");
+ renderMaintenancePanel(customers,eq);
+
 }
+
+function phoneActions(row, customer){
+ const raw=customer?.telefono?.trim();
+ if(!raw){row.append(el("p","Sin celular registrado. Corrígelo en Mis clientes.","muted small"));return;}
+ row.append(el("p","Celular: "+raw,"phone-display"));
+ const phone=raw.replace(/[^\d+]/g,"");
+ if(!/^\+?[1-9]\d{6,14}$/.test(phone))return;
+ const actions=el("div",null,"maintenance-actions");
+ const call=el("a","Llamar");call.href="tel:"+phone;call.className="contact-action";actions.append(call);
+ let digits=phone.replace(/\D/g,"");
+ if(digits.length===9&&digits.startsWith("9"))digits="51"+digits;
+ if(digits.length>=10&&digits.length<=15){
+  const wa=el("a","WhatsApp");wa.href="https://wa.me/"+digits;wa.target="_blank";wa.rel="noopener noreferrer";wa.className="contact-action whatsapp";
+  wa.setAttribute("aria-label","Abrir chat de WhatsApp sin enviar mensajes");
+  actions.append(wa);
+ }
+ row.append(actions);
+}
+function renderMaintenancePanel(customers,equipment){
+ const list=$("equipment-list"),history=$("maintenance-list"),filter=$("maintenance-filter").value;
+ list.replaceChildren();history.replaceChildren();
+ const clientMap=new Map(customers.map(c=>[c.id,c]));
+ const dueMap=new Map(dueItems().map(d=>[d.id,d]));
+ const candidates=equipment.filter(e=>(filter==="todos"||e.activo!==false)&&(filter!=="proximos"||(dueMap.has(e.id)&&dueMap.get(e.id).days<=30)));
+ const records=candidates.map(e=>({e,d:dueMap.get(e.id),c:clientMap.get(e.cliente_id)}))
+  .sort((a,b)=>(a.d?.days??Number.MAX_SAFE_INTEGER)-(b.d?.days??Number.MAX_SAFE_INTEGER));
+ for(const {e,d,c} of records.slice(0,250)){
+  const active=e.activo!==false;
+  const row=recordLine(list,(c?.nombre||"Cliente no identificado")+" · "+e.modelo+" "+e.capacidad_l+" L",
+   "Instalación: "+fmtDate(e.instalado_el)+" · Próxima revisión: "+(d?fmtDate(d.date)+" ("+(d.days<0?"vencida":d.days===0?"hoy":d.days+" días")+")":"fecha pendiente")+(c?.zona?" · "+c.zona:""),
+   !active?"Archivado":!d?"Pendiente":d.days<0?"Vencido":d.days<=30?"Próximo":"Programado",
+   !active?"warning":d&&d.days<=30?"warning":"");
+  if(c)phoneActions(row,c);
+  if(state.role==="admin"){
+   const actions=el("div",null,"maintenance-actions");
+   const edit=el("button","Editar equipo");edit.type="button";edit.addEventListener("click",()=>startEquipmentEdit(e));actions.append(edit);
+   const archive=el("button",active?"Eliminar (archivar)":"Restaurar");archive.type="button";archive.addEventListener("click",()=>toggleEquipmentArchive(e));actions.append(archive);
+   row.append(actions);
+  }
+ }
+ if(!records.length)empty(list,filter==="proximos"?"Sin vencimientos durante los próximos 30 días.":"No hay equipos con este filtro.");
+ const items=state.records.mantenimientos||[];
+ for(const m of items.slice(0,150)){
+  const eq=equipment.find(e=>e.id===m.equipo_id),c=clientMap.get(eq?.cliente_id),annulled=m.anulado===true;
+  const row=recordLine(history,(c?.nombre||"Cliente")+" · "+(eq?.modelo||"Equipo")+" · "+fmtDate(m.fecha_realizada),
+   (m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones")+(annulled?" · Motivo anulación: "+(m.motivo_anulacion||"No indicado"):""),
+   annulled?"Anulado":"Realizado",annulled?"warning":"success");
+  if(state.role==="admin"&&!annulled){
+   const actions=el("div",null,"maintenance-actions");
+   const edit=el("button","Editar servicio");edit.type="button";edit.addEventListener("click",()=>startMaintenanceEdit(m));
+   const annul=el("button","Eliminar (anular)");annul.type="button";annul.addEventListener("click",()=>annulMaintenance(m));
+   actions.append(edit,annul);row.append(actions);
+  }
+ }
+ if(!items.length)empty(history,"Todavía no hay servicios registrados.");
+}
+$("maintenance-filter").addEventListener("change",()=>renderMaintenancePanel(state.records.clientes||[],state.records.equipos||[]));
+function startEquipmentEdit(e){
+ if(state.role!=="admin")return;
+ const form=$("equipment-edit-form");
+ fillSelect("maintenance-edit-client",state.records.clientes||[],"Selecciona cliente","id",c=>c.nombre+" · "+(c.zona||""));
+ for(const k of ["id","modelo","capacidad_l","serie","instalado_el","intervalo_meses"])form.elements.namedItem(k).value=e[k]??"";
+ form.elements.namedItem("cliente_id").value=e.cliente_id;
+ form.hidden=false;$("equipment-edit-hint").hidden=true;form.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function closeEquipmentEdit(){const form=$("equipment-edit-form");form.reset();form.hidden=true;$("equipment-edit-hint").hidden=false;}
+$("equipment-edit-cancel").addEventListener("click",closeEquipmentEdit);
+$("equipment-edit-form").addEventListener("submit",async ev=>{
+ ev.preventDefault();if(state.role!=="admin")return;
+ const d=Object.fromEntries(new FormData(ev.target));
+ if(d.instalado_el&&d.instalado_el>localToday())return say("No puedes registrar instalaciones futuras como ejecutadas.");
+ if(!window.confirm("¿Confirmas la corrección de los datos técnicos del equipo?"))return;
+ try{
+  await patchRecord("equipos",d.id,{cliente_id:d.cliente_id,modelo:d.modelo.trim(),capacidad_l:Number(d.capacidad_l),
+    serie:d.serie.trim()||null,instalado_el:d.instalado_el||null,intervalo_meses:Number(d.intervalo_meses)});
+  closeEquipmentEdit();await refresh();say("Equipo editado. Mantenimiento recalculado.");
+ }catch(err){showErr(err,"Editar equipo")}
+});
+async function toggleEquipmentArchive(e){
+ if(state.role!=="admin")return;
+ const archiving=e.activo!==false;let changes;
+ if(archiving){
+  const reason=window.prompt("Motivo de archivo, al menos 6 caracteres. No se borrará el historial:");
+  if(reason===null)return;
+  if(reason.trim().length<6)return say("Explica el motivo de archivo (mínimo 6 caracteres).");
+  if(!window.confirm("¿Archivar esta terma? Saldrá de los mantenimientos activos, pero conservará su historial."))return;
+  changes={activo:false,archivado_en:new Date().toISOString(),archivado_por:state.user.id,motivo_archivo:reason.trim()};
+ }else{
+  if(!window.confirm("¿Restaurar el equipo a la lista de instalaciones activas?"))return;
+  changes={activo:true,archivado_en:null,archivado_por:null,motivo_archivo:null};
+ }
+ try{await patchRecord("equipos",e.id,changes);await refresh();say(archiving?"Equipo archivado, conservando el historial.":"Equipo restaurado.");}
+ catch(err){showErr(err,"Archivar/restaurar equipo")}
+}
+function startMaintenanceEdit(m){
+ if(state.role!=="admin"||m.anulado===true)return;
+ const form=$("maintenance-edit-form");
+ for(const k of ["id","fecha_realizada","tipo","observaciones"])form.elements.namedItem(k).value=m[k]??"";
+ form.hidden=false;form.scrollIntoView({behavior:"smooth",block:"center"});
+}
+$("maintenance-edit-cancel").addEventListener("click",()=>{const f=$("maintenance-edit-form");f.reset();f.hidden=true;});
+$("maintenance-edit-form").addEventListener("submit",async ev=>{
+ ev.preventDefault();if(state.role!=="admin")return;
+ const d=Object.fromEntries(new FormData(ev.target));
+ if(d.fecha_realizada>localToday())return say("La fecha de mantenimiento realizado no puede ser futura.");
+ if(!window.confirm("¿Confirmas que los datos corregidos corresponden a un servicio realmente ejecutado?"))return;
+ try{
+  await patchRecord("mantenimientos",d.id,{fecha_realizada:d.fecha_realizada,tipo:d.tipo,observaciones:d.observaciones||null});
+  ev.target.reset();ev.target.hidden=true;await refresh();say("Registro de mantenimiento editado.");
+ }catch(err){showErr(err,"Editar mantenimiento")}
+});
+async function annulMaintenance(m){
+ if(state.role!=="admin"||m.anulado===true)return;
+ const reason=window.prompt("Motivo de anulación, mínimo 6 caracteres. Se conservará el historial:");
+ if(reason===null)return;
+ if(reason.trim().length<6)return say("Indica por qué se anula este servicio (mínimo 6 caracteres).");
+ if(!window.confirm("¿Anular este servicio? Permanecerá en historial y dejará de afectar la próxima revisión."))return;
+ try{
+  await patchRecord("mantenimientos",m.id,{anulado:true,anulado_en:new Date().toISOString(),anulado_por:state.user.id,motivo_anulacion:reason.trim()});
+  await refresh();say("Registro anulado; historial conservado.");
+ }catch(err){showErr(err,"Anular mantenimiento")}
+}
+
 function addMonths(base,months){
  const d=new Date(base+"T12:00:00Z");
  if(Number.isNaN(d.getTime()))return null;
@@ -234,7 +350,7 @@ function addMonths(base,months){
  d.setUTCDate(Math.min(original,last));return d;
 }
 function dueItems(){
- const arr=state.records.equipos||[], maint=state.records.mantenimientos||[],today=new Date(localToday()+"T12:00:00Z");
+ const arr=(state.records.equipos||[]).filter(x=>x.activo!==false), maint=(state.records.mantenimientos||[]).filter(m=>m.anulado!==true),today=new Date(localToday()+"T12:00:00Z");
  return arr.map(x=>{
   const visits=maint.filter(m=>m.equipo_id===x.id).map(m=>m.fecha_realizada).filter(Boolean).sort();
   const anchor=visits.length?visits[visits.length-1]:x.instalado_el;
@@ -325,7 +441,7 @@ function renderCustomerDirectory(customers,equipment){
  const filtered=customers.filter(c=>([c.nombre,c.zona,c.telefono].filter(Boolean).join(" ")).toLocaleLowerCase("es").includes(q));
  $("client-total-label").textContent=customers.length+" "+(customers.length===1?"cliente":"clientes");
  for(const c of filtered.slice(0,150)){
-  const owned=equipment.filter(e=>e.cliente_id===c.id);
+  const owned=equipment.filter(e=>e.cliente_id===c.id&&e.activo!==false);
   const item=recordLine(pane,c.nombre,(c.zona||"Distrito pendiente")+(c.telefono?" · Teléfono registrado":" · Sin teléfono"),owned.length+" "+(owned.length===1?"terma":"termas"),owned.length?"success":"warning");
   const next=customerNextService(c.id,equipment);
   for(const eq of owned){
@@ -391,7 +507,7 @@ function renderSalesAndCustomers(customers,sales,quotes,equipment){
  fillSelect("equipment-customer",customers,"Selecciona cliente","id",x=>x.nombre);
  fillSelect("sale-quote",quotes,"Sin cotización asociada","id",x=>x.modelo+" · "+money(x.precio_total),x=>x.estado==="aceptada");
  fillSelect("equipment-sale",sales,"Sin venta vinculada","id",x=>(x.referencia||x.id.slice(0,8))+" · "+money(x.monto_total),x=>x.estado==="confirmada");
- fillSelect("maintenance-equipment",equipment,"Selecciona equipo","id",x=>x.modelo+" "+x.capacidad_l+" L · "+(x.serie||x.id.slice(0,8)));
+ fillSelect("maintenance-equipment",equipment,"Selecciona equipo","id",x=>((state.records.clientes||[]).find(c=>c.id===x.cliente_id)?.nombre||"Cliente sin identificar")+" · "+x.modelo+" "+x.capacidad_l+" L",x=>x.activo!==false);
  const target=$("sales-list");target.replaceChildren();
  for(const v of sales.slice(0,80)){
   const owner=customers.find(c=>c.id===v.cliente_id);
