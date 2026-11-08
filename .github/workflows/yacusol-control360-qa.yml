@@ -1,0 +1,22 @@
+name: Control 360 · Validación técnica
+on:
+  pull_request:
+    paths:
+      - 'control360/**'
+      - '.github/workflows/yacusol-control360-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'control360/**'
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revisión estática
+        run: node control360/qa-static.mjs
