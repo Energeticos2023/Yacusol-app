@@ -3,7 +3,7 @@
 const API = "https://kdlthtyxsmcehxwgjkrn.supabase.co";
 const API_KEY = "sb_publishable_76SxjVx0QhDPpb99S630Wg_7LHHrJFM";
 const ROLES = ["admin","ventas","tecnico"];
-const state = { token:null, role:null, user:null, tab:"inicio", records:{}, errors:{} };
+const state = { token:null, role:null, user:null, tab:"inicio", records:{}, errors:{}, albumPreviews:new Map(), gallerySequence:0 };
 const $ = (id) => document.getElementById(id);
 const elems = { login:$("login"),app:$("app"),message:$("global-message") };
 
@@ -85,6 +85,7 @@ function loginScreen(){
  state.token=null;state.role=null;state.user=null;
  sessionStorage.removeItem("yacusol_session");
  sessionStorage.removeItem("yacusol_refresh");
+ state.albumPreviews.clear();state.gallerySequence++;
  elems.login.hidden=false;elems.app.hidden=true;$("password").value="";
 }
 async function resume(token){
@@ -96,7 +97,7 @@ async function resume(token){
  $("user-label").textContent=(u.email||"Cuenta autorizada")+" · "+role;
  elems.login.hidden=true;elems.app.hidden=false;
  if(role==="tecnico"){
-  for(const tab of ["prospectos","cotizaciones","ventas"])document.querySelector(`[data-tab="${tab}"]`).hidden=true;
+  for(const tab of ["prospectos","clientes","cotizaciones","ventas"])document.querySelector(`[data-tab="${tab}"]`).hidden=true;
  }
  await refresh();
 }
@@ -121,7 +122,7 @@ document.querySelectorAll(".nav [data-tab]").forEach(button=>button.addEventList
  state.tab=button.dataset.tab;
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b===button));
  document.querySelectorAll(".tab-pane").forEach(p=>p.hidden=p.id!=="tab-"+state.tab);
- const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Fotos y videos",mantenimiento:"Mantenimiento",campanas:"Campañas"};
+ const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",clientes:"Mis clientes e instalaciones",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Mi álbum de fotos y videos",mantenimiento:"Mantenimiento",campanas:"Campañas"};
  $("page-heading").textContent=titles[state.tab];
  clearNotice();
 }));
@@ -160,6 +161,8 @@ function recordLine(container,title,subtitle,badge,mode){
 }
 function renderAll(){
  const ps=state.records.prospectos||[],qu=state.records.cotizaciones||[],vs=state.records.ventas||[],eq=state.records.equipos||[],media=state.records.media_assets||[],customers=state.records.clientes||[];
+ $("kpi-clientes").textContent=count("clientes");
+ $("kpi-instalaciones").textContent=state.records.equipos===null?"—":String(eq.filter(x=>Boolean(x.instalado_el)).length);
  $("kpi-prospectos").textContent=count("prospectos");
  $("kpi-cotizaciones").textContent=state.records.cotizaciones===null?"—":String(qu.filter(x=>["enviada","aceptada"].includes(x.estado)).length);
  $("kpi-ventas").textContent=state.records.ventas===null?"—":String(vs.filter(v=>v.estado==="confirmada").length);
@@ -209,12 +212,16 @@ function renderAll(){
  for(const p of ps){const option=el("option",p.nombre+" · "+(p.distrito||"" ));option.value=p.id;select.append(option)}
  if([...select.options].some(o=>o.value===current))select.value=current;
  renderSalesAndCustomers(customers,vs,qu,eq);
+ renderCustomerDirectory(customers,eq);
  renderMedia(media);
  renderChannelPerformance(ps,qu,vs,state.records.embudo_campana);
  const ml=$("maintenance-list");ml.replaceChildren();
  for(const m of (state.records.mantenimientos||[]).slice(0,50))recordLine(ml,"Servicio "+fmtDate(m.fecha_realizada),(m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones"),"Realizado","success");
  const eql=$("equipment-list");eql.replaceChildren();
- for(const x of due.slice(0,80))recordLine(eql,x.modelo+" "+(x.capacidad_l||"")+" L","Próxima revisión: "+fmtDate(x.date)+" · "+x.days+" días",x.days<0?"Vencido":x.days<=30?"Próximo":"Programado",x.days<=30?"warning":"");
+ for(const x of due.slice(0,80)){
+  const customer=customers.find(c=>c.id===x.cliente_id);
+  recordLine(eql,(customer?.nombre||"Cliente sin identificar")+" · "+x.modelo+" "+(x.capacidad_l||"")+" L","Próxima revisión: "+fmtDate(x.date)+" · "+(x.days<0?"vencido hace "+Math.abs(x.days)+" días":"en "+x.days+" días"),x.days<0?"Vencido":x.days<=30?"Próximo":"Programado",x.days<=30?"warning":"");
+ }
  for(const x of eq.filter(x=>!x.instalado_el).slice(0,30))recordLine(eql,x.modelo+" "+x.capacidad_l+" L","Fecha de instalación pendiente","Pendiente","warning");
  if(state.records.equipos===null)empty(eql,"No disponible: revisa permisos o conexión.");
 }
@@ -232,7 +239,7 @@ function dueItems(){
   const anchor=visits.length?visits[visits.length-1]:x.instalado_el;
   if(!anchor)return null;
   const when=addMonths(anchor,Number(x.intervalo_meses||12));if(!when)return null;
-  return {modelo:x.modelo,capacidad_l:x.capacidad_l,date:when.toISOString().slice(0,10),days:Math.round((when-today)/86400000)};
+  return {id:x.id,cliente_id:x.cliente_id,modelo:x.modelo,capacidad_l:x.capacidad_l,date:when.toISOString().slice(0,10),days:Math.round((when-today)/86400000)};
  }).filter(Boolean).sort((a,b)=>a.days-b.days);
 }
 $("prospect-form").addEventListener("submit",async e=>{
