@@ -208,8 +208,8 @@ function renderAll(){
   const preview=el("button",q.precio_total?"Ver documento / PDF":"Ver solicitud interna");
   preview.type="button";
   preview.addEventListener("click",()=>previewQuotation(q));tools.append(preview);
-  const wa=el("button",q.precio_total?"Preparar WhatsApp":"Consultar por WhatsApp");wa.type="button";
-  wa.addEventListener("click",()=>shareQuoteByWhatsApp(q));tools.append(wa);
+  const wa=el("button",q.precio_total?"Preparar WhatsApp":"Pendiente de precio");wa.type="button";
+  wa.addEventListener("click",()=>q.precio_total?shareQuoteByWhatsApp(q):say("Confirma el precio, modelo y alcance de la marca antes de emitir una oferta."));tools.append(wa);
   if(["admin","ventas"].includes(state.role)&&q.estado==="borrador"){
    const b=el("button","Marcar enviada");b.type="button";
    b.addEventListener("click",()=>updateQuoteStatus(q,"enviada"));tools.append(b);
@@ -590,10 +590,12 @@ function quoteExtras(q){
  return Array.isArray(q.adicionales)?q.adicionales.filter(x=>x&&x.nombre&&Number.isFinite(Number(x.precio))):[];
 }
 function quoteExclusions(q){
- return Array.isArray(q.exclusiones)&&q.exclusiones.length?q.exclusiones:QUOTE_EXCLUSIONS;
+ return Array.isArray(q.exclusiones)&&q.exclusiones.length?q.exclusiones:
+ (q.marca&&q.marca!=="YACUSOL"?["Pendiente de ficha y condiciones del fabricante"]:QUOTE_EXCLUSIONS);
 }
 function quoteIncluded(q){
- return Array.isArray(q.componentes)&&q.componentes.length?q.componentes:QUOTE_INCLUDED_REGULAR;
+ return Array.isArray(q.componentes)&&q.componentes.length?q.componentes:
+ (q.marca&&q.marca!=="YACUSOL"?["Configuración por definir según fabricante"]:QUOTE_INCLUDED_REGULAR);
 }
 function currentQuoteSnapshot(){
  const data=Object.fromEntries(new FormData($("quote-form")));
