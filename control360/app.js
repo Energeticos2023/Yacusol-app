@@ -307,6 +307,77 @@ function fillSelect(id,items,placeholder,valueKey,labelFn,filterFn=()=>true){
  }
  if(Array.from(select.options).some(o=>o.value===current))select.value=current;
 }
+
+function customerNextService(customerId,equipment){
+ const matches=dueItems().filter(d=>d.cliente_id===customerId);
+ const pending=equipment.filter(x=>x.cliente_id===customerId&&!x.instalado_el);
+ if(matches.length){
+  const closest=matches[0];
+  return {text:"Próxima revisión: "+fmtDate(closest.date)+(closest.days<0?" · vencida hace "+Math.abs(closest.days)+" días":closest.days===0?" · vence hoy":" · faltan "+closest.days+" días"),due:closest.days};
+ }
+ return pending.length?{text:"Terma registrada sin fecha de instalación",due:null}:null;
+}
+function renderCustomerDirectory(customers,equipment){
+ const q=($("client-search").value||"").trim().toLocaleLowerCase("es");
+ const pane=$("client-directory");
+ pane.replaceChildren();
+ const filtered=customers.filter(c=>([c.nombre,c.zona,c.telefono].filter(Boolean).join(" ")).toLocaleLowerCase("es").includes(q));
+ $("client-total-label").textContent=customers.length+" "+(customers.length===1?"cliente":"clientes");
+ for(const c of filtered.slice(0,150)){
+  const owned=equipment.filter(e=>e.cliente_id===c.id);
+  const item=recordLine(pane,c.nombre,(c.zona||"Distrito pendiente")+(c.telefono?" · Teléfono registrado":" · Sin teléfono"),owned.length+" "+(owned.length===1?"terma":"termas"),owned.length?"success":"warning");
+  const next=customerNextService(c.id,equipment);
+  for(const eq of owned){
+   const details=el("p",(eq.modelo||"YACUSOL")+" · "+(eq.capacidad_l||"?")+" L"+(eq.serie?" · Serie: "+eq.serie:"")+" · "+(eq.instalado_el?"Instalación: "+fmtDate(eq.instalado_el):"Instalación pendiente de registrar"));
+   item.append(details);
+  }
+  if(next){
+   const label=el("p",next.text);
+   if(next.due!==null&&next.due<=30)label.classList.add("due-emphasis");
+   item.append(label);
+  }else{
+   item.append(el("p","Sin terma registrada. Para calcular mantenimiento, abre «Ventas e instalaciones» y vincula el equipo y su fecha."));
+  }
+  if(["admin","ventas"].includes(state.role)){
+   const edit=el("button","Editar datos del cliente");
+   edit.addEventListener("click",()=>startEditCustomer(c));
+   item.append(edit);
+  }
+ }
+ if(!filtered.length)empty(pane,q?"No se encontraron clientes con ese criterio.":"Aún no se han registrado clientes.");
+}
+$("client-search").addEventListener("input",()=>{
+ renderCustomerDirectory(state.records.clientes||[],state.records.equipos||[]);
+});
+function startEditCustomer(customer){
+ const form=$("edit-customer-form");
+ form.elements.namedItem("id").value=customer.id;
+ form.elements.namedItem("nombre").value=customer.nombre||"";
+ form.elements.namedItem("telefono").value=customer.telefono||"";
+ form.elements.namedItem("zona").value=customer.zona||"";
+ $("customer-form").hidden=true;
+ form.hidden=false;
+ form.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function closeEditCustomer(){
+ $("edit-customer-form").reset();
+ $("edit-customer-form").hidden=true;
+ $("customer-form").hidden=false;
+}
+$("cancel-customer-edit").addEventListener("click",closeEditCustomer);
+$("edit-customer-form").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!["admin","ventas"].includes(state.role))return say("No autorizado para editar clientes.");
+ const form=e.target,d=Object.fromEntries(new FormData(form)),phone=d.telefono.replace(/[()\s-]/g,"")||null;
+ if(!d.nombre.trim())return say("Indica el nombre del cliente.");
+ try{
+  await patchRecord("clientes",d.id,{nombre:d.nombre.trim(),telefono:phone,zona:d.zona.trim()||null});
+  closeEditCustomer();
+  await refresh();
+  say("Ficha del cliente actualizada correctamente.");
+ }catch(err){showErr(err,"Edición de cliente")}
+});
+
 function renderSalesAndCustomers(customers,sales,quotes,equipment){
  const list=$("customer-list");list.replaceChildren();
  for(const c of customers.slice(0,30))recordLine(list,c.nombre,(c.zona||"Sin distrito")+" · "+(c.telefono||"Sin teléfono"));
