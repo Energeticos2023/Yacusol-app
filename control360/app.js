@@ -144,8 +144,8 @@ function renderAll(){
  const f=$("funnel");f.replaceChildren();
  for(const etapa of ["nuevo","contactado","calificado","cotizado","ganado","perdido"]){
   const c=ps.filter(x=>x.etapa===etapa).length;
-  const item=el("div",null,"funnel-item"),track=el("div",null,"funnel-track"),bar=el("div",null,"funnel-bar");
-  bar.style.width=(ps.length?100*c/ps.length:0)+"%";track.append(bar);
+  const item=el("div",null,"funnel-item"),track=el("progress",null,"funnel-meter");
+  track.max=Math.max(ps.length,1);track.value=c;
   item.append(el("span",etapa,"funnel-label"),track,el("span",state.records.prospectos===null?"—":c,"funnel-number"));f.append(item);
  }
  const pri=$("priorities");pri.replaceChildren();
