@@ -538,20 +538,24 @@ function getQuoteState(){
  const brand=$("quote-brand").value;
  const validatedPrice=brand==="YACUSOL"&&Object.hasOwn(YACUSOL_PRICES,capacity);
  const promo=validatedPrice&&$("quote-package").value==="navidad_2026";
- const selected=validatedPrice?[...$("quote-extras").querySelectorAll('input[type="checkbox"]:checked')]:[]
-  .map(x=>x.value).filter(x=>Object.hasOwn(YACUSOL_EXTRAS,x));
+ const selected=validatedPrice?[...$("quote-extras").querySelectorAll('input[type="checkbox"]:checked')]
+  .map(x=>x.value).filter(x=>Object.hasOwn(YACUSOL_EXTRAS,x)):[];
  const chosen=selected.filter(id=>!(promo&&["magnesio","resistencia"].includes(id)));
  const extras=chosen.map(id=>({id,nombre:YACUSOL_EXTRAS[id].nombre,precio:YACUSOL_EXTRAS[id].precio}));
- const unitBase=validatedPrice?YACUSOL_PRICES[capacity]:null;
- const unitPrice=validatedPrice?unitBase+extras.reduce((a,x)=>a+x.precio,0):null;
- const included=validatedPrice?(promo?QUOTE_INCLUDED_NAVIDAD.slice():QUOTE_INCLUDED_REGULAR.slice()):[];
+ const manualUnit=Number($("quote-manual-price").value);
+ const manualAllowed=!validatedPrice&&brand!=="YACUSOL"&&Number.isFinite(manualUnit)&&manualUnit>0;
+ const manualIncludes=$("quote-manual-included").value.split("\n").map(x=>x.trim()).filter(Boolean);
+ const manualExcludes=$("quote-manual-excluded").value.split("\n").map(x=>x.trim()).filter(Boolean);
+ const unitBase=validatedPrice?YACUSOL_PRICES[capacity]:manualAllowed?manualUnit:null;
+ const unitPrice=validatedPrice?unitBase+extras.reduce((a,x)=>a+x.precio,0):manualAllowed?manualUnit:null;
+ const included=validatedPrice?(promo?QUOTE_INCLUDED_NAVIDAD.slice():QUOTE_INCLUDED_REGULAR.slice()):manualIncludes;
  for(const x of extras)included.push(x.nombre+" (adicional presupuestado)");
- const exclusions=(validatedPrice?QUOTE_EXCLUSIONS:[]).filter(x=>
+ const exclusions=(validatedPrice?QUOTE_EXCLUSIONS:manualExcludes).filter(x=>
    !(x==="Tanque asistente"&&extras.some(e=>e.id.startsWith("tanque"))) &&
    !(x==="Válvula termostática"&&extras.some(e=>e.id==="valvula")) &&
    !(x==="Pantalla controladora electrónica"&&extras.some(e=>e.id==="controlador")) &&
    !(x==="Instalación y conexión hidráulica"&&extras.some(e=>e.id==="instalacion")));
- return {brand,validatedPrice,capacity,amount,promo,unitBase,unitPrice,extras,included,exclusions,total:validatedPrice?Math.round(unitPrice*amount*100)/100:null};
+ return {brand,validatedPrice,manualAllowed,capacity,amount,promo,unitBase,unitPrice,extras,included,exclusions,total:unitPrice!==null?Math.round(unitPrice*amount*100)/100:null};
 }
 function updateQuoteEstimate(){
  const v=getQuoteState();
@@ -561,9 +565,10 @@ function updateQuoteEstimate(){
  }
  $("quote-capacity").querySelectorAll("option").forEach(o=>{if(v.brand!=="YACUSOL")o.textContent=o.value==="0"?"Otra capacidad: especificar en modelo":o.value+" litros · precio por confirmar";else if(o.value==="0")o.textContent="Otra capacidad · por consultar";else o.textContent=o.value+" litros · "+money(YACUSOL_PRICES[Number(o.value)]);});
  $("quote-package").disabled=!v.validatedPrice;
- $("quote-live-total").textContent=v.validatedPrice&&v.unitPrice>0&&Number.isInteger(v.amount)&&v.amount>0?money(v.total):"Solicitar precio y disponibilidad";
+ $("quote-manual-block").hidden=v.brand==="YACUSOL";
+ $("quote-live-total").textContent=v.unitPrice!==null&&v.unitPrice>0&&Number.isInteger(v.amount)&&v.amount>0?money(v.total):"Solicitar precio y disponibilidad";
 }
-for(const id of ["quote-brand","quote-capacity","quote-quantity","quote-package"]){
+for(const id of ["quote-brand","quote-capacity","quote-quantity","quote-package","quote-manual-price"]){
  $(id).addEventListener("change",updateQuoteEstimate);
  $(id).addEventListener("input",updateQuoteEstimate);
 }
@@ -600,17 +605,24 @@ function currentQuoteSnapshot(){
  if(!v.validatedPrice&&!data.modelo_fabricante?.trim()&&v.capacity===0)throw new Error("Indica capacidad o modelo de fabricante para solicitar la cotización.");
  if(!data.valido_hasta||data.valido_hasta<localToday())throw new Error("Especifica una fecha de vigencia válida.");
  if(v.validatedPrice&&v.unitPrice<=0)throw new Error("El precio debe ser positivo.");
+ if(v.manualAllowed){
+  if(!data.modelo_fabricante?.trim())throw new Error("Para emitir oferta multimarca indica el modelo de fabricante.");
+  if(!data.fuente_precio_manual?.trim()||data.fuente_precio_manual.trim().length<6)throw new Error("Especifica una fuente verificable de precio (fabricante, lista y fecha).");
+  if(!v.included.length||!v.exclusions.length)throw new Error("Registra inclusiones y exclusiones de acuerdo con la ficha o presupuesto.");
+  if(!data.validado_manual)throw new Error("Para cotizar con precio manual debes confirmar verificación comercial.");
+ }
  return {
  cliente_id:data.cliente_id||null,prospecto_id:data.prospecto_id||null,
  emisor_legal:emisor.nombre,ruc_emisor:emisor.ruc,
  marca:v.brand,modelo_fabricante:data.modelo_fabricante?.trim()||null,
  modelo:"Terma solar "+v.brand+(v.validatedPrice?" de baja presión":"")+(v.capacity?" "+v.capacity+" L":" · capacidad por confirmar"),
  capacidad_l:v.capacity||null,cantidad:v.amount,precio_unitario:v.unitPrice,precio_total:v.total,
- moneda:"PEN",igv_incluido:v.validatedPrice,modalidad:v.promo?"navidad_2026":"regular",
+ moneda:"PEN",igv_incluido:v.validatedPrice?true:!!data.igv_manual,modalidad:v.promo?"navidad_2026":"regular",
  adicionales:v.extras.map(e=>({id:e.id,nombre:e.nombre,precio:e.precio})),
  componentes:v.included,exclusiones:v.exclusions,
  notas:data.notas?.trim()||null,valido_hasta:data.valido_hasta,
- precio_fuente:v.validatedPrice?QUOTE_SOURCE:null,precio_verificado_en:v.validatedPrice?new Date().toISOString():null,estado:"borrador"
+ precio_fuente:v.validatedPrice?QUOTE_SOURCE:v.manualAllowed?data.fuente_precio_manual.trim():null,
+ precio_verificado_en:v.validatedPrice||v.manualAllowed?new Date().toISOString():null,estado:"borrador"
  };
 }
 $("quote-form").addEventListener("submit",async e=>{
@@ -661,12 +673,12 @@ function previewQuotation(q){
   ["Cliente",c.name||"Sin nombre"],
   ["Zona",c.location||"No indicada"],
   ["Válida hasta",fmtDate(q.valido_hasta)],
-  ["Moneda","Soles (PEN), incluye IGV"]
+  ["Moneda",q.precio_total===null?"Precio por confirmar":q.igv_incluido?"Soles (PEN), incluye IGV":"Soles (PEN), tratamiento de IGV por precisar"]
  ]){
   const item=el("div");item.append(el("strong",pair[0]+": "),el("span",pair[1]));meta.append(item);
  }
  root.append(meta);
- const intro=el("p","De acuerdo con la solicitud del cliente, presentamos nuestra propuesta de suministro de una terma solar YACUSOL de baja presión, según el siguiente detalle.");
+ const intro=el("p",q.precio_total?"De acuerdo con la solicitud del cliente, presentamos nuestra propuesta comercial de suministro de "+q.modelo+", según el siguiente detalle.":"Registro interno de solicitud de información para "+q.modelo+". Sin precio confirmado no constituye una oferta comercial.");
  root.append(intro);
  const table=el("table",null,"quote-table"),thead=el("thead"),header=el("tr");
  for(const text of ["Descripción","Precio unitario","Cantidad","Importe"])header.append(el("th",text));
@@ -679,7 +691,7 @@ function previewQuotation(q){
  for(const x of extra)tbody.append(quoteRowItem(x.nombre,Number(x.precio),quantity,Number(x.precio)*quantity));
  table.append(tbody);root.append(table);
  const total=el("div",null,"quote-sum");
- total.append(el("strong",q.precio_total?"TOTAL PROPUESTA":"PRECIO PENDIENTE DE CONFIRMACIÓN"),el("strong",money(q.precio_total)));
+ total.append(el("strong",q.precio_total?"TOTAL PROPUESTA"+(q.igv_incluido?" (IGV incluido)":" (ver condición tributaria)"):"PRECIO PENDIENTE DE CONFIRMACIÓN"),el("strong",money(q.precio_total)));
  root.append(total);
  root.append(quoteSection("Incluye",quoteIncluded(q)));
  root.append(quoteSection("No incluye",quoteExclusions(q)));
@@ -721,7 +733,7 @@ function shareQuoteByWhatsApp(q){
   "Incluye: "+quoteIncluded(q).join(", ")+".",
   extras.length?"Adicionales: "+extras.join("; ")+".":"",
   "No incluye: "+quoteExclusions(q).join("; ")+".",
-  "Total (IGV incluido): "+money(q.precio_total)+".",
+  "Total "+(q.igv_incluido?"(IGV incluido)":"(IGV por precisar)")+": "+money(q.precio_total)+".",
   "Válida hasta: "+fmtDate(q.valido_hasta)+".",
   "Emisor: "+q.emisor_legal+".",
   "El documento PDF será compartido por separado; su preparación no constituye confirmación de venta."
