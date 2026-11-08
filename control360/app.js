@@ -133,6 +133,7 @@ async function refresh(){
  const specs=[
   ["prospectos",()=>state.role==="tecnico"?[]:list("prospectos")],
   ["clientes",()=>state.role==="tecnico"?[]:list("clientes")],
+  ["embudo_campana",()=>state.role==="tecnico"?[]:api("/rest/v1/y360_embudo_campana?select=*&order=canal.asc,campana.asc")],
   ["cotizaciones",()=>state.role==="tecnico"?[]:list("cotizaciones")],
   ["media_assets",()=>list("media_assets")],
   ["ventas",()=>state.role==="tecnico"?[]:listRaw("ventas","creado_en.desc")],
@@ -209,7 +210,7 @@ function renderAll(){
  if([...select.options].some(o=>o.value===current))select.value=current;
  renderSalesAndCustomers(customers,vs,qu,eq);
  renderMedia(media);
- renderChannelPerformance(ps,qu,vs);
+ renderChannelPerformance(ps,qu,vs,state.records.embudo_campana);
  const ml=$("maintenance-list");ml.replaceChildren();
  for(const m of (state.records.mantenimientos||[]).slice(0,50))recordLine(ml,"Servicio "+fmtDate(m.fecha_realizada),(m.tipo||"Mantenimiento")+" · "+(m.observaciones||"Sin observaciones"),"Realizado","success");
  const eql=$("equipment-list");eql.replaceChildren();
@@ -250,8 +251,18 @@ $("quote-form").addEventListener("submit",async e=>{
  try{await insert("cotizaciones",data);e.target.reset();await refresh();say("Borrador registrado. Verifica compatibilidad y condiciones comerciales antes de enviarlo.");}catch(err){showErr(err,"Cotización")}
 });
 
-function renderChannelPerformance(prospects,quotes,sales){
+function renderChannelPerformance(prospects,quotes,sales,aggregates){
  const target=$("channel-performance");target.replaceChildren();
+ if(Array.isArray(aggregates)){
+  for(const row of aggregates){
+    recordLine(target,
+      (row.canal||"Otro").toUpperCase()+" · "+(row.campana||"Sin campaña"),
+      Number(row.prospectos||0)+" consultas · "+Number(row.cotizaciones_enviadas||0)+" cotizaciones · "+Number(row.ventas_confirmadas||0)+" ventas · S/ "+Number(row.ventas_monto_pen||0).toFixed(2)+" · USD "+Number(row.ventas_monto_usd||0).toFixed(2),
+      "Desde Supabase","success");
+  }
+  if(!target.children.length)empty(target,"Aún no hay prospectos ni conversiones registrados por campaña.");
+  return;
+ }
  const sources=["facebook","instagram","tiktok","whatsapp","web","referido","manual","otro"];
  const confirmed=sales.filter(v=>v.estado==="confirmada");
  for(const source of sources){
