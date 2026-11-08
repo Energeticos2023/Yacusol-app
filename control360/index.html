@@ -137,7 +137,19 @@
                   <option value="500">500 litros · S/ 5,700.00</option><option value="0">Otra capacidad · por consultar</option>
                 </select>
               </label>
-              <label>Cantidad de termas <input id="quote-quantity" name="cantidad" type="number" min="1" max="100" value="1" required></label>
+              <div class="wide manual-quote-group" id="quote-manual-block" hidden>
+                <h3>Marca sin tarifa oficial cargada</h3>
+                <p class="muted small">Ingresa precio y alcance solo después de verificar lista del fabricante/proveedor. Sin precio validado, puedes guardar una solicitud interna, pero no emitirla como cotización formal.</p>
+                <div class="form-grid">
+                 <label>Precio unitario S/ <input id="quote-manual-price" name="precio_manual" type="number" min="0" step="0.01" placeholder="Pendiente"></label>
+                 <label>Fuente verificable del precio <input id="quote-manual-source" name="fuente_precio_manual" maxlength="220" placeholder="Lista / proveedor / fecha"></label>
+                 <label class="wide">Componentes incluidos (uno por línea) <textarea id="quote-manual-included" name="componentes_manuales" rows="3" maxlength="1500" placeholder="Según ficha técnica del fabricante"></textarea></label>
+                 <label class="wide">Exclusiones (una por línea) <textarea id="quote-manual-excluded" name="exclusiones_manuales" rows="3" maxlength="1500" placeholder="Accesorios, instalación, flete, etc., según oferta"></textarea></label>
+                 <label class="wide"><input id="quote-manual-tax" name="igv_manual" type="checkbox"> El importe manual incluye IGV (según comprobación comercial)</label>
+                 <label class="wide"><input id="quote-manual-verified" name="validado_manual" type="checkbox"> Confirmo que comprobé precio, alcance y vigencia con fuente comercial autorizada.</label>
+                </div>
+              </div>
+                            <label>Cantidad de termas <input id="quote-quantity" name="cantidad" type="number" min="1" max="100" value="1" required></label>
               <label>Vigencia hasta <input id="quote-expiration" type="date" name="valido_hasta" required></label>
               <label class="wide">Alcance del suministro
                 <select id="quote-package" name="paquete">
