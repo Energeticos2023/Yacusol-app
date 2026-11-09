@@ -175,6 +175,8 @@ async function refresh(){
   ["cotizaciones",()=>state.role==="tecnico"?[]:list("cotizaciones")],
   ["media_assets",()=>list("media_assets")],
   ["preparacion_visitas",()=>listRaw("preparacion_visitas","creado_en.desc")],
+  ["actas_instalacion",()=>listRaw("actas_instalacion","registrado_en.desc")],
+  ["asignaciones",()=>state.role==="ventas"?[]:listRaw("asignaciones","creado_en.desc")],
   ["ventas",()=>state.role==="tecnico"?[]:listRaw("ventas","creado_en.desc")],
   ["equipos",()=>listRaw("equipos","creado_en.desc")],
   ["mantenimientos",()=>listRaw("mantenimientos","registrado_en.desc")]
@@ -446,8 +448,105 @@ $("technical-print").addEventListener("click",()=>{
  if(!$("technical-equipment").value)return say("Elige una terma antes de imprimir la ficha.");
  window.print();
 });
+
+const INSTALLATION_CHECKS = {
+ verificacion_acceso:"Acceso y seguridad",verificacion_estructura:"Soporte y anclajes",
+ verificacion_ubicacion:"Ubicación y orientación",verificacion_hidraulica:"Circuito hidráulico",
+ verificacion_seguridad_presion:"Venteo / alivio",verificacion_estanqueidad:"Estanqueidad",
+ verificacion_electrica:"Respaldo eléctrico",verificacion_funcionamiento:"Funcionamiento",
+ verificacion_antiquemaduras:"Protección contra quemaduras",verificacion_capacitacion:"Entrega de instrucciones"
+};
+const INSTALLATION_LABELS={
+ instalacion:"Instalación",puesta_servicio:"Pruebas y puesta en servicio",
+ inspeccion:"Inspección",correccion:"Corrección documental"
+};
+const INSTALLATION_CHECK_RESULT={sin_verificar:"No verificado",conforme:"Conforme según registro",
+ observado:"Observado",no_aplica:"No aplica (justificar)"};
+function renderInstallationActs(eId){
+ const list=$("installation-act-list"),form=$("installation-act-form"),notice=$("installation-act-readonly");
+ if(!list||!form||!notice)return;
+ list.replaceChildren();
+ const eq=(state.records.equipos||[]).find(e=>e.id===eId);
+ const acts=(state.records.actas_instalacion||[]).filter(a=>a.equipo_id===eId)
+  .sort((a,b)=>String(b.registrado_en).localeCompare(String(a.registrado_en)));
+ if(!eq){form.hidden=true;notice.hidden=true;empty(list,"Selecciona una terma para consultar su historial.");return;}
+ const permitted=state.role==="admin"||
+  (state.role==="tecnico"&&(state.records.asignaciones||[]).some(a=>a.equipo_id===eId&&a.tecnico_id===state.user?.id));
+ form.hidden=!permitted;notice.hidden=permitted;
+ if(!acts.length){
+  empty(list,"Sin actas registradas: técnico, ensayos y entrega aún no están documentados.");
+  return;
+ }
+ for(const a of acts.slice(0,100)){
+  const item=recordLine(list,INSTALLATION_LABELS[a.tipo_evento]||a.tipo_evento,
+   "Trabajo: "+fmtDate(a.fecha_trabajo)+" · Técnico: "+a.tecnico_principal+
+   " · Registrado: "+fmtDate(a.registrado_en),a.estado_entrega==="entregado_con_evidencia"?"Entrega documentada":"Registro sin recepción probada",
+   a.estado_entrega==="entregado_con_evidencia"?"success":"warning");
+  const line=el("p","Fuente: "+a.fuente_registro+" · Sistema: "+a.tipo_sistema+
+   " · Autor de carga: "+(a.registrado_por===state.user?.id?state.user?.email:"Identificador "+String(a.registrado_por||"").slice(0,8)),
+   "muted small");
+  item.append(line);
+  const paragraphs=[
+   ["Técnicos auxiliares",a.tecnicos_apoyo],["Empresa",a.empresa_instaladora],
+   ["Responsable de pruebas",a.responsable_pruebas],["Orden",a.orden_referencia],
+   ["Componentes instalados",a.componentes_accesorios],["Condiciones del sitio",a.condiciones_y_riesgos],
+   ["Mediciones",[
+    a.temperatura_salida_c==null?null:"Salida: "+a.temperatura_salida_c+" °C",
+    a.presion_entrada_kpa==null?null:"Entrada: "+a.presion_entrada_kpa+" kPa"
+   ].filter(Boolean).join(" · ")],
+   ["Pruebas y observaciones",a.observaciones_pruebas],
+   ["Pendientes",a.pendientes],["Receptor",a.receptor_cliente],
+   ["Evidencia de entrega",a.evidencia_entrega],["Fotos/documentos relacionados",a.referencia_evidencias]
+  ];
+  const details=el("details");const heading=el("summary","Ver información y verificaciones");
+  details.append(heading);
+  for(const [name,value] of paragraphs)if(value)details.append(el("p",name+": "+value,"muted small"));
+  const c=a.controles||{};
+  for(const [key,label] of Object.entries(INSTALLATION_CHECKS))
+   if(c[key]&&c[key]!=="sin_verificar")details.append(el("p",label+": "+(INSTALLATION_CHECK_RESULT[c[key]]||c[key]),"muted small"));
+  item.append(details);
+ }
+}
+$("installation-act-form").addEventListener("submit",async ev=>{
+ ev.preventDefault();
+ const eId=$("technical-equipment").value;
+ const equipment=(state.records.equipos||[]).find(x=>x.id===eId);
+ const hasPermission=state.role==="admin"||(state.role==="tecnico"&&(state.records.asignaciones||[]).some(a=>a.equipo_id===eId&&a.tecnico_id===state.user?.id));
+ if(!equipment||!hasPermission)return say("Solo administración o técnico asignado pueden registrar un acta.");
+ const raw=Object.fromEntries(new FormData(ev.target));
+ if(!raw.fecha_trabajo||raw.fecha_trabajo>localToday())return say("La fecha del trabajo debe ser real y no futura.");
+ if(!raw.tecnico_principal?.trim())return say("Identifica al técnico responsable.");
+ if(raw.estado_entrega==="entregado_con_evidencia"&&(!raw.receptor_cliente?.trim()||!raw.evidencia_entrega?.trim()))
+  return say("Para declarar entrega documentada registra receptor y referencia verificable del cargo o acta.");
+ const controles={};
+ for(const key of Object.keys(INSTALLATION_CHECKS))controles[key]=raw[key]||"sin_verificar";
+ const observed=Object.values(controles).includes("observado");
+ if(observed&&!raw.pendientes?.trim())return say("Documenta las observaciones o pendientes detectados.");
+ if(Object.values(controles).includes("no_aplica")&&!raw.observaciones_pruebas?.trim())
+  return say("Justifica por escrito los controles marcados «No aplica».");
+ if(raw.estado_entrega==="entregado_con_evidencia"&&observed)return say("No marques entrega documentada cuando hay observaciones técnicas; documenta su subsanación.");
+ const fields=["tipo_evento","fecha_trabajo","tecnico_principal","empresa_instaladora",
+ "tecnicos_apoyo","responsable_pruebas","orden_referencia","fuente_registro","tipo_sistema",
+ "componentes_accesorios","condiciones_y_riesgos","observaciones_pruebas","pendientes",
+ "receptor_cliente","evidencia_entrega","estado_entrega","referencia_evidencias"];
+ const payload={equipo_id:eId,controles};
+ for(const key of fields)payload[key]=typeof raw[key]==="string"?(raw[key].trim()||null):raw[key];
+ for(const key of ["temperatura_salida_c","presion_entrada_kpa"])
+  payload[key]=raw[key]!==""&&raw[key]!=null?Number(raw[key]):null;
+ const button=ev.target.querySelector('button[type="submit"]');
+ button.disabled=true;
+ try{
+  await insert("actas_instalacion",payload);
+  ev.target.reset();
+  await refresh();
+  say("Acta histórica guardada; identifica responsable y fecha. No implica certificación ni aprobación.");
+ }catch(err){showErr(err,"Acta de instalación");}
+ finally{button.disabled=false;}
+});
+
 function renderTechnicalSheet(){
  const eId=$("technical-equipment").value;
+ renderInstallationActs(eId);
  const eq=(state.records.equipos||[]).find(x=>x.id===eId);
  const summary=$("technical-equipment-summary"),gallery=$("technical-gallery"),count=$("technical-media-count"),form=$("preparation-form");
  gallery.replaceChildren();
@@ -463,6 +562,19 @@ function renderTechnicalSheet(){
  const title=el("strong",(customer?.nombre||"Cliente no disponible")+" · "+eq.modelo+" · "+eq.capacidad_l+" L");
  summary.append(title,el("p","Instalación: "+fmtDate(eq.instalado_el)+" · Zona: "+(customer?.zona||"Por confirmar")+
   " · Próximo mantenimiento: "+(dueItems().find(d=>d.id===eq.id)?fmtDate(dueItems().find(d=>d.id===eq.id).date):"No calculado")));
+ const actas=(state.records.actas_instalacion||[]).filter(a=>a.equipo_id===eq.id);
+ const installation=actas.filter(a=>a.tipo_evento==="instalacion");
+ const commissioned=actas.filter(a=>a.tipo_evento==="puesta_servicio");
+ const primary=installation.slice().sort((a,b)=>String(b.registrado_en).localeCompare(String(a.registrado_en)))[0];
+ summary.append(el("p",primary?
+  "Instalador documentado: "+primary.tecnico_principal+" · Fecha: "+fmtDate(primary.fecha_trabajo)+
+  " · Fuente: "+primary.fuente_registro :
+  "Instalador: NO DOCUMENTADO · Solicitar acta de instalación con evidencia.",
+  primary?"muted small":"pill warning"));
+ summary.append(el("p",commissioned.length?
+   "Puesta en servicio: "+commissioned.length+" acta(s) registrada(s); revisar pruebas y evidencias antes de declarar conformidad." :
+   "Puesta en servicio: SIN ACTA registrada. El registro de la terma no certifica pruebas.",
+   commissioned.length?"muted small":"pill warning"));
  if(customer)phoneActions(summary,customer);
  const assets=(state.records.media_assets||[]).filter(m=>m.equipo_id===eq.id&&m.cliente_id===eq.cliente_id);
  count.textContent=assets.length+" "+(assets.length===1?"archivo":"archivos");
