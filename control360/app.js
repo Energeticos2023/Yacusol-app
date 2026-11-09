@@ -176,6 +176,7 @@ async function refresh(){
   ["media_assets",()=>list("media_assets")],
   ["preparacion_visitas",()=>listRaw("preparacion_visitas","creado_en.desc")],
   ["actas_instalacion",()=>listRaw("actas_instalacion","registrado_en.desc")],
+  ["asignaciones",()=>state.role==="ventas"?[]:listRaw("asignaciones","creado_en.desc")],
   ["ventas",()=>state.role==="tecnico"?[]:listRaw("ventas","creado_en.desc")],
   ["equipos",()=>listRaw("equipos","creado_en.desc")],
   ["mantenimientos",()=>listRaw("mantenimientos","registrado_en.desc")]
@@ -561,6 +562,19 @@ function renderTechnicalSheet(){
  const title=el("strong",(customer?.nombre||"Cliente no disponible")+" · "+eq.modelo+" · "+eq.capacidad_l+" L");
  summary.append(title,el("p","Instalación: "+fmtDate(eq.instalado_el)+" · Zona: "+(customer?.zona||"Por confirmar")+
   " · Próximo mantenimiento: "+(dueItems().find(d=>d.id===eq.id)?fmtDate(dueItems().find(d=>d.id===eq.id).date):"No calculado")));
+ const actas=(state.records.actas_instalacion||[]).filter(a=>a.equipo_id===eq.id);
+ const installation=actas.filter(a=>a.tipo_evento==="instalacion");
+ const commissioned=actas.filter(a=>a.tipo_evento==="puesta_servicio");
+ const primary=installation.slice().sort((a,b)=>String(b.registrado_en).localeCompare(String(a.registrado_en)))[0];
+ summary.append(el("p",primary?
+  "Instalador documentado: "+primary.tecnico_principal+" · Fecha: "+fmtDate(primary.fecha_trabajo)+
+  " · Fuente: "+primary.fuente_registro :
+  "Instalador: NO DOCUMENTADO · Solicitar acta de instalación con evidencia.",
+  primary?"muted small":"pill warning"));
+ summary.append(el("p",commissioned.length?
+   "Puesta en servicio: "+commissioned.length+" acta(s) registrada(s); revisar pruebas y evidencias antes de declarar conformidad." :
+   "Puesta en servicio: SIN ACTA registrada. El registro de la terma no certifica pruebas.",
+   commissioned.length?"muted small":"pill warning"));
  if(customer)phoneActions(summary,customer);
  const assets=(state.records.media_assets||[]).filter(m=>m.equipo_id===eq.id&&m.cliente_id===eq.cliente_id);
  count.textContent=assets.length+" "+(assets.length===1?"archivo":"archivos");
