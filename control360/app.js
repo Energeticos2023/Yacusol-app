@@ -307,6 +307,12 @@ function renderMaintenancePanel(customers,equipment){
    "Instalación: "+fmtDate(e.instalado_el)+" · Próxima revisión: "+(d?fmtDate(d.date)+" ("+(d.days<0?"vencida":d.days===0?"hoy":d.days+" días")+")":"fecha pendiente")+(c?.zona?" · "+c.zona:""),
    !active?"Archivado":!d?"Pendiente":d.days<0?"Vencido":d.days<=30?"Próximo":"Programado",
    !active?"warning":d&&d.days<=30?"warning":"");
+  const install=(state.records.actas_instalacion||[]).filter(a=>a.equipo_id===e.id&&a.tipo_evento==="instalacion")
+   .sort((a,b)=>String(b.registrado_en).localeCompare(String(a.registrado_en)))[0];
+  row.append(el("p",install?
+   "Instalador registrado: "+install.tecnico_principal+" · "+fmtDate(install.fecha_trabajo)+" · "+install.fuente_registro:
+   "Instalador: SIN ACTA. Completar ficha técnica y pruebas antes de declarar entrega conforme.",
+   install?"muted small":"pill warning"));
   if(c)phoneActions(row,c);
   const technical=el("button","Ficha técnica y fotos");technical.type="button";
   technical.addEventListener("click",()=>openTechnicalSheet(e.id));
