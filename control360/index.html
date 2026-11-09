@@ -311,6 +311,70 @@
             <button id="technical-print" class="secondary" type="button">Imprimir ficha de preparación</button>
           </div>
         </article>
+        <div class="two-col section-gap" id="actas-installation-section">
+          <article class="panel">
+            <h3>Acta de instalación y puesta en servicio</h3>
+            <p class="muted small">Identifica al responsable, documenta las verificaciones y conserva cada actuación con fecha, autor y antecedentes. No es un certificado de conformidad ni sustituye el protocolo del fabricante.</p>
+            <form id="installation-act-form" class="form-grid" hidden>
+              <label>Actuación <select name="tipo_evento" required>
+                <option value="instalacion">Instalación</option><option value="puesta_servicio">Pruebas y puesta en servicio</option>
+                <option value="inspeccion">Inspección</option><option value="correccion">Subsanación documentada</option>
+              </select></label>
+              <label>Fecha del trabajo <input name="fecha_trabajo" type="date" required></label>
+              <label class="wide">Técnico instalador / responsable principal <input name="tecnico_principal" minlength="2" maxlength="160" placeholder="Nombre y apellidos reales" required></label>
+              <label>Empresa o contratista instalador <input name="empresa_instaladora" maxlength="160" placeholder="Razón social, si consta"></label>
+              <label>Responsable de las pruebas <input name="responsable_pruebas" maxlength="160" placeholder="Nombre de quien realizó las pruebas"></label>
+              <label class="wide">Ayudantes / técnicos participantes <input name="tecnicos_apoyo" maxlength="500" placeholder="Nombres o función, según evidencia"></label>
+              <label>Referencia de orden o servicio <input name="orden_referencia" maxlength="120" placeholder="OT / guía / acta"></label>
+              <label>Fuente de información <select name="fuente_registro" required>
+                <option value="declaracion">Declaración de responsable (pendiente contrastar)</option>
+                <option value="presencial">Registro presencial</option><option value="acta_documental">Acta o parte documental</option>
+                <option value="historico">Reconstrucción histórica</option>
+              </select></label>
+              <label>Tipo de sistema <select name="tipo_sistema" required>
+                <option value="sin_verificar">Por verificar</option>
+                <option value="baja_presion">Baja presión / venteo</option>
+                <option value="presurizado">Presurizado</option><option value="otro">Otro diseño</option>
+              </select></label>
+              <label class="wide">Componentes, accesorios y repuestos instalados <textarea name="componentes_accesorios" maxlength="3000" rows="2" placeholder="Marca/modelo, tubos, tanque, estructura, barra de Mg, resistencia, válvulas, aislación, repuestos. Distinguir instalado de suministrado."></textarea></label>
+              <fieldset class="wide" style="border:1px solid #c9d6e4;border-radius:10px;padding:12px;display:grid;gap:10px;">
+                <legend>Verificaciones técnicas (registrar solo lo comprobado)</legend>
+                <div id="installation-checks" class="form-grid">
+                  <label>Seguridad del área y acceso<select name="verificacion_acceso"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Soporte y anclajes<select name="verificacion_estructura"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Ubicación, orientación y sombras<select name="verificacion_ubicacion"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Alimentación y conexiones hidráulicas<select name="verificacion_hidraulica"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Venteo / alivio adecuado al diseño<select name="verificacion_seguridad_presion"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Estanqueidad y pérdidas<select name="verificacion_estanqueidad"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Protección eléctrica de resistencia<select name="verificacion_electrica"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Funcionamiento y temperatura<select name="verificacion_funcionamiento"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Protección contra quemaduras y mezclado<select name="verificacion_antiquemaduras"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                  <label>Entrega, manual y recomendaciones<select name="verificacion_capacitacion"><option value="sin_verificar">Sin verificar</option><option value="conforme">Verificado conforme</option><option value="observado">Con observaciones</option><option value="no_aplica">No aplica justificado</option></select></label>
+                </div>
+              </fieldset>
+              <label>Temperatura de salida medida (°C) <input name="temperatura_salida_c" type="number" step="0.1" min="0" max="120" placeholder="Solo lectura real"></label>
+              <label>Presión de entrada medida (kPa) <input name="presion_entrada_kpa" type="number" step="0.1" min="0" max="4000" placeholder="Solo si se midió"></label>
+              <label class="wide">Riesgos del lugar y medidas de control <textarea name="condiciones_y_riesgos" maxlength="3000" rows="2" placeholder="Acceso, trabajo en altura, cubierta, viento, suministro eléctrico, protección personal y limitaciones"></textarea></label>
+              <label class="wide">Pruebas realizadas, instrumentos, valores y observaciones <textarea name="observaciones_pruebas" maxlength="3000" rows="3" placeholder="Procedimiento aprobado, equipo de medición, fecha, resultado y criterios aplicables al fabricante"></textarea></label>
+              <label class="wide">Pendientes y no conformidades <textarea name="pendientes" maxlength="2500" rows="2" placeholder="Detalle, responsable y acción comprometida; no declarar conforme si hay pendientes críticos"></textarea></label>
+              <label>Persona que recibió la terma <input name="receptor_cliente" maxlength="160" placeholder="Nombre real del receptor"></label>
+              <label>Estado de entrega <select name="estado_entrega">
+                <option value="sin_documentar">Entrega no documentada</option><option value="pendiente">Pendiente de entrega</option>
+                <option value="entregado_con_evidencia">Entregada con evidencia documentada</option>
+              </select></label>
+              <label class="wide">Referencia de conformidad / cargo firmado <input name="evidencia_entrega" maxlength="500" placeholder="N.º de acta o documento; no sustituye firma"></label>
+              <label class="wide">Referencias de fotos, protocolos, mediciones y archivos en el álbum <textarea name="referencia_evidencias" maxlength="800" rows="2" placeholder="Identificar exactamente los archivos ya asociados a esta terma"></textarea></label>
+              <button class="primary wide" type="submit">Guardar acta histórica de esta terma</button>
+              <p class="muted small wide">Registro permanente: no se sobreescribe ni elimina. Una corrección se deja en una nueva acta. El registro no equivale a conformidad técnica ni autorización de entrega.</p>
+            </form>
+            <p id="installation-act-readonly" class="muted small" hidden>Solo el administrador o el técnico asignado puede registrar actas. Los demás usuarios pueden consultarlas.</p>
+          </article>
+          <article class="panel">
+            <h3>Historial trazable y responsables</h3>
+            <p class="muted small">Identifique autor, fecha y fuente. Si no hay acta, la instalación permanece sin evidencia de ejecución. Fotos y videos privados siguen en el álbum de esta terma.</p>
+            <div id="installation-act-list" class="records" aria-live="polite"></div>
+          </article>
+        </div>
         <div class="two-col section-gap">
           <article class="panel">
             <div class="panel-title"><h3>Álbum técnico de esta terma</h3><span id="technical-media-count" class="muted">0 archivos</span></div>
@@ -415,6 +479,6 @@
       <footer>ENERGÉTICOS CONTROL 360 · Versión multimarca 2026-11-08 · Datos y precios verificables.</footer>
     </main>
   </div>
-  <script src="./app.js?v=20261108-auditoria2" defer></script>
+  <script src="./app.js?v=20261108-trazabilidad1" defer></script>
 </body>
 </html>
