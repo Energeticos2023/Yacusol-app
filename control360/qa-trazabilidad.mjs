@@ -26,4 +26,10 @@ assert(!/grant\s+.*(?:update|delete)\s+on public\.actas_instalacion/i.test(migra
 assert(migration.includes("registrado_por uuid not null default auth.uid()"),"Audit author not fixed");
 assert(migration.includes("registrado_en timestamptz not null default now()"),"Audit timestamp not fixed");
 assert(migration.includes("references public.equipos(id) on delete restrict"),"Foreign key missing");
+assert(html.includes('id="installation-team-list"'),"No existe el listado de técnicos instaladores en Ventas");
+assert(html.includes("4 · Técnico instalador de cada terma"),"Panel de instalador no visible en Ventas");
+assert(app.includes("renderInstallationTeamList(customers,eq)"),"No se carga el listado de instaladores");
+assert(app.includes("Técnico instalador: SIN REGISTRAR"),"No advierte ausencia de acta");
+assert(app.includes("Registrar técnico instalador"),"Falta acceso directo al formulario de instalador");
+assert(app.includes('openTechnicalSheet(e.id)'),"No se abre la ficha del equipo seleccionado");
 console.log("QA trazabilidad: formulario, historial, controles, roles, RLS, actas inmutables y evidencia comprobados.");
