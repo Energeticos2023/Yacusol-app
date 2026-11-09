@@ -158,7 +158,7 @@ document.querySelectorAll(".nav [data-tab]").forEach(button=>button.addEventList
  state.tab=button.dataset.tab;
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b===button));
  document.querySelectorAll(".tab-pane").forEach(p=>p.hidden=p.id!=="tab-"+state.tab);
- const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",clientes:"Mis clientes e instalaciones",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Mi álbum de fotos y videos",ficha:"Ficha técnica por terma",mantenimiento:"Mantenimiento",campanas:"Campañas"};
+ const titles={inicio:"Resumen del negocio",prospectos:"Prospectos",clientes:"Mis clientes e instalaciones",cotizaciones:"Cotizaciones",ventas:"Ventas e instalaciones",media:"Mi álbum de fotos y videos",ficha:"Ficha técnica, instalador y pruebas",mantenimiento:"Mantenimiento",campanas:"Campañas"};
  $("page-heading").textContent=titles[state.tab];
  clearNotice();
 }));
@@ -268,12 +268,55 @@ function renderAll(){
  refreshUploadEquipmentPicker();
  fillSelect("technical-equipment",eq.filter(x=>x.activo!==false),"Selecciona terma","id",x=>(customers.find(c=>c.id===x.cliente_id)?.nombre||"Cliente")+" · "+x.modelo+" "+x.capacidad_l+" L");
 
+ renderInstallationTeamList(customers,eq);
  renderCustomerDirectory(customers,eq);
  renderMedia(media);
  renderTechnicalSheet();
  renderChannelPerformance(ps,qu,vs,state.records.embudo_campana);
  renderMaintenancePanel(customers,eq);
 
+}
+
+function renderInstallationTeamList(customers,equipment){
+ const panel=$("installation-team-list");
+ if(!panel)return;
+ panel.replaceChildren();
+ const names=new Map(customers.map(c=>[c.id,c.nombre]));
+ const acts=state.records.actas_instalacion||[];
+ if(!equipment.length)return empty(panel,"No existen termas registradas.");
+ for(const e of equipment.filter(x=>x.activo!==false).slice(0,200)){
+  const install=acts.filter(a=>a.equipo_id===e.id&&a.tipo_evento==="instalacion")
+    .sort((a,b)=>String(b.registrado_en).localeCompare(String(a.registrado_en)))[0];
+  const title=(names.get(e.cliente_id)||"Cliente no disponible")+" · "+e.modelo+" · "+e.capacidad_l+" L";
+  const registered=Boolean(install);
+  const row=recordLine(panel,title,
+    registered?"Técnico instalador: "+install.tecnico_principal+" · Trabajo: "+fmtDate(install.fecha_trabajo)+
+      " · Fuente: "+install.fuente_registro:
+      "Técnico instalador: SIN REGISTRAR · Requiere acta vinculada a esta terma.",
+    registered?"Instalador documentado":"Pendiente de trazabilidad",
+    registered?"success":"warning");
+  const button=el("button",registered?"Ver técnico y acta":"Registrar técnico instalador");
+  button.type="button";button.className="secondary";
+  const canRegister=state.role==="admin"||(state.role==="tecnico"&&
+      (state.records.asignaciones||[]).some(a=>a.equipo_id===e.id&&a.tecnico_id===state.user?.id));
+  if(!canRegister)button.textContent=registered?"Ver técnico y acta":"Consultar instalación sin técnico";
+  button.addEventListener("click",()=>{
+    openTechnicalSheet(e.id);
+    const form=$("installation-act-form");
+    if(canRegister&&!registered&&form&&!form.hidden){
+      const date=form.elements.namedItem("fecha_trabajo");
+      if(date&&!date.value&&e.instalado_el)date.value=e.instalado_el;
+      const tech=form.elements.namedItem("tecnico_principal");
+      const section=$("actas-installation-section");
+      if(section)section.scrollIntoView({behavior:"smooth",block:"start"});
+      if(tech)tech.focus({preventScroll:true});
+    }else{
+      const section=$("actas-installation-section");
+      if(section)section.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+  });
+  row.append(button);
+ }
 }
 
 function phoneActions(row, customer){
@@ -314,7 +357,7 @@ function renderMaintenancePanel(customers,equipment){
    "Instalador: SIN ACTA. Completar ficha técnica y pruebas antes de declarar entrega conforme.",
    install?"muted small":"pill warning"));
   if(c)phoneActions(row,c);
-  const technical=el("button","Ficha técnica y fotos");technical.type="button";
+  const technical=el("button","Ver / registrar técnico instalador y pruebas");technical.type="button";
   technical.addEventListener("click",()=>openTechnicalSheet(e.id));
   row.append(technical);
   if(state.role==="admin"){
