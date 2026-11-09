@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
 import vm from "node:vm";
-const root=new URL("../",import.meta.url);
+const root=new URL("./",import.meta.url);
 const read=p=>fs.readFileSync(new URL(p,root),"utf8");
 const html=read("index.html"),app=read("app.js"),migration=read("migrations/20261108_actas_instalacion.sql");
 new vm.Script(app,{filename:"app.js"});
