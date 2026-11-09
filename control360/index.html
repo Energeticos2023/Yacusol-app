@@ -36,7 +36,7 @@
         <button data-tab="cotizaciones">▤ <span>Cotizaciones</span></button>
         <button data-tab="ventas">◈ <span>Ventas e instalaciones</span></button>
         <button data-tab="media">▧ <span>Mi álbum de fotos y videos</span></button>
-        <button data-tab="ficha">◫ <span>Ficha técnica y visita</span></button>
+        <button data-tab="ficha">◫ <span>Ficha / instalador y pruebas</span></button>
         <button data-tab="mantenimiento">⚙ <span>Mantenimiento</span></button>
         <button data-tab="campanas">✺ <span>Campañas</span></button>
       </nav>
@@ -246,9 +246,15 @@
               <label>Fecha de instalación <input name="instalado_el" type="date"></label>
               <label class="wide">Revisión cada (meses) <input name="intervalo_meses" type="number" min="1" max="120" value="12" required></label>
               <button class="primary wide" type="submit">Registrar equipo</button>
+              <p class="muted small wide">Importante: registrar el equipo no identifica automáticamente al instalador. Después completa el acta de instalación y sus pruebas con el técnico responsable real.</p>
             </form>
           </article>
         </div>
+        <article class="panel section-gap" id="installation-team-panel">
+          <div class="panel-title"><h3>4 · Técnico instalador de cada terma</h3><span class="status-label">Trazabilidad por equipo</span></div>
+          <p class="muted small">Aquí puedes consultar quién instaló cada terma. Si figura «Sin registrar», utiliza el botón de su ficha para identificar al técnico, fecha, participantes y evidencias. Solo una persona administradora o un técnico asignado podrá guardar un acta; ventas puede consultar.</p>
+          <div id="installation-team-list" class="records section-gap" aria-live="polite"></div>
+        </article>
       </section>
       <section id="tab-media" class="tab-pane" hidden>
         <div class="section-head"><div><h2>Banco de fotos y videos reales</h2><p>Tu propia biblioteca para campañas YACUSOL auténticas.</p></div><span class="status-label">Almacenamiento privado</span></div>
@@ -479,6 +485,6 @@
       <footer>ENERGÉTICOS CONTROL 360 · Versión multimarca 2026-11-08 · Datos y precios verificables.</footer>
     </main>
   </div>
-  <script src="./app.js?v=20261108-trazabilidad1" defer></script>
+  <script src="./app.js?v=20261108-instalador2" defer></script>
 </body>
 </html>
