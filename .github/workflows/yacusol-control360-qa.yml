@@ -30,6 +30,8 @@ jobs:
         run: node control360/qa-trazabilidad.mjs
       - name: Instalación como app en celulares (PWA)
         run: node control360/qa-pwa.mjs
+      - name: Presentación para celulares
+        run: node control360/qa-movil.mjs
       - name: Obtener catálogo oficial de YACUSOL (público)
         uses: actions/checkout@v4
         with:

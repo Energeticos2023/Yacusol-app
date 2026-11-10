@@ -28,6 +28,11 @@ La solución está **en fase de validación operativa**: hay datos comerciales y
 - La sesión sigue en `sessionStorage`: al cerrar la app se vuelve a pedir el inicio de sesión.
 - Prueba automática: `node control360/qa-pwa.mjs`.
 
+## Presentación para celulares (10/11/2026)
+- En pantallas de hasta 860 px el panel cambia a diseño de app: barra de módulos fija abajo, cabecera fija con Instalar, Actualizar y Salir, una sola columna y textos de 16 px (sin necesidad de zoom).
+- Corrige el desborde anterior: el menú lateral obligaba a una página de 989 px en celulares de 390 px.
+- La computadora conserva el diseño con menú lateral. Prueba automática: `node control360/qa-movil.mjs`.
+
 ## Correcciones de la auditoría 08/11/2026
 - Prevención de fuga entre sesiones: reinicio de datos, roles y formularios; protección ante solicitudes asíncronas de otra sesión.
 - Lectura paginada en lotes; umbral operativo de 10 000 registros con aviso explícito. **Pendiente:** consulta/filtrado y conteos agregados por servidor para alta escala.

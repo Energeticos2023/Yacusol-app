@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-title" content="Control 360">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="application-name" content="Control 360">
-  <link rel="stylesheet" href="./styles.css?v=20261109-pwa1">
+  <link rel="stylesheet" href="./styles.css?v=20261110-movil1">
 </head>
 <body>
   <div id="login" class="login-layout">
@@ -40,15 +40,15 @@
       <div class="brand"><span class="brand-symbol" aria-hidden="true">▦</span><div><strong>YACUSOL</strong><small>CONTROL 360</small></div></div>
       <p class="sidebar-label">CENTRO DE OPERACIONES</p>
       <nav class="nav" aria-label="Navegación">
-        <button data-tab="inicio" class="active">▦ <span>Resumen</span></button>
-        <button data-tab="prospectos">◉ <span>Prospectos</span></button>
-        <button data-tab="clientes">♧ <span>Mis clientes</span></button>
-        <button data-tab="cotizaciones">▤ <span>Cotizaciones</span></button>
-        <button data-tab="ventas">◈ <span>Ventas e instalaciones</span></button>
-        <button data-tab="media">▧ <span>Mi álbum de fotos y videos</span></button>
-        <button data-tab="ficha">◫ <span>Ficha / instalador y pruebas</span></button>
-        <button data-tab="mantenimiento">⚙ <span>Mantenimiento</span></button>
-        <button data-tab="campanas">✺ <span>Campañas</span></button>
+        <button data-tab="inicio" data-short="Inicio" class="active">▦ <span>Resumen</span></button>
+        <button data-tab="prospectos" data-short="Prospectos">◉ <span>Prospectos</span></button>
+        <button data-tab="clientes" data-short="Clientes">♧ <span>Mis clientes</span></button>
+        <button data-tab="cotizaciones" data-short="Cotizar">▤ <span>Cotizaciones</span></button>
+        <button data-tab="ventas" data-short="Ventas">◈ <span>Ventas e instalaciones</span></button>
+        <button data-tab="media" data-short="Álbum">▧ <span>Mi álbum de fotos y videos</span></button>
+        <button data-tab="ficha" data-short="Ficha">◫ <span>Ficha / instalador y pruebas</span></button>
+        <button data-tab="mantenimiento" data-short="Mantto.">⚙ <span>Mantenimiento</span></button>
+        <button data-tab="campanas" data-short="Campañas">✺ <span>Campañas</span></button>
       </nav>
       <div class="sidebar-bottom"><span id="user-label"></span><button id="logout" class="secondary">Cerrar sesión</button></div>
     </aside>
@@ -56,7 +56,7 @@
     <main class="main">
       <header class="topbar">
         <div><p class="eyebrow">ENERGÉTICOS · YACUSOL</p><h1 id="page-heading">Resumen del negocio</h1></div>
-        <div class="top-actions"><span class="private-tag">● Panel privado</span><button type="button" id="install-app" class="secondary install-top">📲 Instalar app</button><button id="refresh" class="secondary">↻ Actualizar</button></div>
+        <div class="top-actions"><span class="private-tag">● Panel privado</span><button type="button" id="install-app" class="secondary install-top" data-icon="📲" aria-label="Instalar app">📲 Instalar app</button><button id="refresh" class="secondary" data-icon="↻" aria-label="Actualizar">↻ Actualizar</button><button type="button" id="logout-mobile" class="secondary mobile-only">Salir</button></div>
       </header>
       <div id="global-message" class="notice" role="status" hidden></div>
 
@@ -523,6 +523,7 @@
     <div class="install-actions"><button type="button" id="install-show-all" class="secondary">Ver ambos sistemas</button><button type="button" id="install-close" class="primary">Entendido</button></div>
   </dialog>
   <script src="./pwa.js?v=20261109-pwa1" defer></script>
+  <script src="./movil.js?v=20261110-movil1" defer></script>
   <script src="./app.js?v=20261108-instalador2" defer></script>
 </body>
 </html>
