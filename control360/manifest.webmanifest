@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "YACUSOL Control 360",
+  "short_name": "Control 360",
+  "description": "Panel privado de ventas, clientes, instalaciones y mantenimiento de ENERGÉTICOS · YACUSOL.",
+  "lang": "es-PE",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0C2340",
+  "theme_color": "#0C2340",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

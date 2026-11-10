@@ -7,7 +7,16 @@
   <meta name="robots" content="noindex,nofollow">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://kdlthtyxsmcehxwgjkrn.supabase.co; img-src 'self' data: blob: https://kdlthtyxsmcehxwgjkrn.supabase.co; media-src 'self' blob: https://kdlthtyxsmcehxwgjkrn.supabase.co; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self';">
   <title>YACUSOL Control 360 · Gestión privada</title>
-  <link rel="stylesheet" href="./styles.css?v=20261108-auditoria2">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Control 360">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="application-name" content="Control 360">
+  <link rel="stylesheet" href="./styles.css?v=20261109-pwa1">
 </head>
 <body>
   <div id="login" class="login-layout">
@@ -20,6 +29,7 @@
         <label>Contraseña <input type="password" id="password" autocomplete="current-password" required minlength="6"></label>
         <button type="submit" class="primary">Ingresar a mi panel</button>
       </form>
+      <button type="button" id="install-login" class="install-button">📲 Instalar la app en el celular</button>
       <p class="small">Acceso exclusivo para personal autorizado de ENERGÉTICOS. No se permite el registro público.</p>
       <p class="message" id="login-message" aria-live="polite"></p>
     </div>
@@ -46,7 +56,7 @@
     <main class="main">
       <header class="topbar">
         <div><p class="eyebrow">ENERGÉTICOS · YACUSOL</p><h1 id="page-heading">Resumen del negocio</h1></div>
-        <div class="top-actions"><span class="private-tag">● Panel privado</span><button id="refresh" class="secondary">↻ Actualizar</button></div>
+        <div class="top-actions"><span class="private-tag">● Panel privado</span><button type="button" id="install-app" class="secondary install-top">📲 Instalar app</button><button id="refresh" class="secondary">↻ Actualizar</button></div>
       </header>
       <div id="global-message" class="notice" role="status" hidden></div>
 
@@ -485,6 +495,34 @@
       <footer>ENERGÉTICOS CONTROL 360 · Versión multimarca 2026-11-08 · Datos y precios verificables.</footer>
     </main>
   </div>
+  <dialog id="install-dialog" class="install-dialog" aria-labelledby="install-title">
+    <div class="install-head">
+      <img src="./icons/icon-192.png" alt="" width="56" height="56">
+      <div><h2 id="install-title">Instalar Control 360</h2><p>Quedará como una app en la pantalla de inicio, sin pasar por la tienda.</p></div>
+    </div>
+    <p id="install-inapp" class="install-warning" hidden>Abriste el enlace dentro de otra app (WhatsApp, Facebook o Instagram). Primero ábrelo en Safari (iPhone) o Chrome (Android) con la opción «Abrir en el navegador».</p>
+    <section id="install-steps-ios" class="install-steps">
+      <h3>iPhone o iPad</h3>
+      <ol>
+        <li>Abre este panel en <strong>Safari</strong>.</li>
+        <li>Toca el botón <strong>Compartir</strong> (el cuadro con la flecha hacia arriba).</li>
+        <li>Elige <strong>«Agregar a inicio»</strong>. Si no aparece, desliza la lista hacia abajo.</li>
+        <li>Toca <strong>«Agregar»</strong>. El ícono Control 360 aparecerá en tu pantalla.</li>
+      </ol>
+    </section>
+    <section id="install-steps-android" class="install-steps">
+      <h3>Android</h3>
+      <ol>
+        <li>Abre este panel en <strong>Chrome</strong>.</li>
+        <li>Toca el menú <strong>⋮</strong> (arriba a la derecha).</li>
+        <li>Elige <strong>«Instalar aplicación»</strong> o <strong>«Agregar a la pantalla principal»</strong>.</li>
+        <li>Confirma con <strong>«Instalar»</strong>.</li>
+      </ol>
+    </section>
+    <p class="install-note">Por seguridad, la app pedirá tu correo y contraseña cada vez que la abras de nuevo.</p>
+    <div class="install-actions"><button type="button" id="install-show-all" class="secondary">Ver ambos sistemas</button><button type="button" id="install-close" class="primary">Entendido</button></div>
+  </dialog>
+  <script src="./pwa.js?v=20261109-pwa1" defer></script>
   <script src="./app.js?v=20261108-instalador2" defer></script>
 </body>
 </html>
