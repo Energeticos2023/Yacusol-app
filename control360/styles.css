@@ -141,3 +141,105 @@
 .install-actions{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
 @media(max-width:460px){.install-top{padding:8px 10px;font-size:12px}}
 @media print{.install-button,.install-top,.install-dialog{display:none!important}}
+
+/* ===== Diseño de app para celulares (≤ 860 px) =====
+   El menú lateral pasa a barra inferior fija, la cabecera queda fija arriba,
+   textos legibles sin zoom (16 px base) y botones cómodos para el dedo. */
+.mobile-only{display:none!important}
+@media(max-width:860px){
+  :root{font-size:16px}
+  html,body{overflow-x:hidden;-webkit-text-size-adjust:100%}
+  body{background:#f3f7fc}
+  button,a,select,input,label{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .mobile-only{display:inline-flex!important}
+
+  /* Estructura: una sola columna y nada más ancho que la pantalla */
+  .app-shell{display:block;min-height:100vh}
+  .main{padding:0 14px calc(92px + env(safe-area-inset-bottom));max-width:100%;min-width:0}
+  .tab-pane,.panel,.two-col,.form-grid,.records,.kpi-grid,.hero{min-width:0;max-width:100%}
+
+  /* Barra de navegación inferior */
+  .sidebar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:block;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:#061c3a;box-shadow:0 -6px 24px #061c3a40}
+  .sidebar .brand,.sidebar-label,.sidebar-bottom{display:none!important}
+  .sidebar:after{content:"";position:absolute;top:0;right:0;bottom:0;width:26px;pointer-events:none;background:linear-gradient(90deg,#061c3a00,#061c3a)}
+  .nav{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:2px;width:100%;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{flex:0 0 auto;min-width:70px;flex-direction:column;justify-content:center;gap:4px;padding:7px 6px 6px;border:0!important;border-radius:12px;font-size:20px;line-height:1;color:#9fb4cc;text-align:center;scroll-snap-align:start}
+  .nav button span{display:none}
+  .nav button:after{content:attr(data-short);font-size:11.5px;font-weight:700;letter-spacing:.01em;line-height:1.1;white-space:nowrap}
+  .nav button.active{background:#16315b;color:#fff;box-shadow:inset 0 3px 0 #f28c1e}
+
+  /* Cabecera fija tipo app */
+  .topbar{position:sticky;top:0;z-index:50;margin:0 -14px 14px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:#0c2340;color:#fff;align-items:center!important;gap:10px;box-shadow:0 4px 18px #061c3a33}
+  .topbar>div:first-child{min-width:0;flex:1}
+  .topbar .eyebrow{font-size:10px;color:#f2a54a;letter-spacing:.12em}
+  .topbar h1{font-size:18px!important;margin:2px 0 0;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-actions{gap:6px;flex:0 0 auto}
+  .private-tag{display:none}
+  .top-actions button{min-height:40px;border-radius:10px;border:1px solid #2c4a70;background:#16315b;color:#fff;padding:0 11px;font-size:14px;font-weight:700}
+  .top-actions button{display:inline-flex;align-items:center;justify-content:center}
+  .top-actions button[data-icon]{font-size:0;width:40px;padding:0}
+  .top-actions button[data-icon]:before{content:attr(data-icon);font-size:19px;line-height:1}
+
+  /* Tipografía legible sin zoom */
+  .eyebrow{font-size:11px}
+  .section-head{display:block;margin:4px 0 14px}
+  .section-head h2{display:none}
+  .section-head p{font-size:14px;line-height:1.45}
+  .panel{padding:16px;border-radius:14px}
+  .panel h3{font-size:17px;margin-bottom:14px}
+  .muted,.note,.small,.notice{font-size:14px}
+  .form-grid,.two-col{grid-template-columns:1fr!important;gap:12px}
+  .form-grid .wide{grid-column:auto}
+  .form-grid label,.stack label{font-size:14px;gap:7px}
+  input,select,textarea{font-size:16px!important;min-height:46px;padding:11px 12px;border-radius:10px}
+  textarea{min-height:96px}
+  .check{font-size:14px!important}
+  .tab-pane label{font-size:14px}
+  .tab-pane small{font-size:13px}
+  .check input{min-height:0}
+  button.primary,button.secondary{min-height:46px;font-size:15px}
+  form button.primary{width:100%}
+
+  /* Tarjetas y listas: sin desplazamiento interno ni desbordes */
+  .records>*,.record>*,.panel>*,.two-col>*{min-width:0;max-width:100%}
+  .panel-title{flex-wrap:wrap;align-items:flex-start}
+  .pill{white-space:normal;line-height:1.35;border-radius:10px}
+  .section-head .status-label{display:inline-block;margin-top:10px}
+  .maintenance-actions{display:flex;flex-wrap:wrap;gap:8px}
+  .maintenance-actions>*{flex:1 1 140px;min-width:0;text-align:center}
+  .records,.client-directory{max-height:none!important;overflow:visible}
+  .record{padding:14px;gap:8px}
+  .record strong{font-size:15px}
+  .record p{font-size:14px;line-height:1.45}
+  .record button,.records select{font-size:14px;min-height:40px;padding:8px 12px}
+  .pill{font-size:12px;padding:5px 9px}
+  .status-label{font-size:13px}
+
+  /* Resumen compacto */
+  .hero{padding:16px 18px;border-radius:16px}
+  .hero h2{font-size:19px;margin:6px 0 0}
+  .hero p:not(.eyebrow),.hero-sun{display:none}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px;margin:14px 0}
+  .kpi{padding:14px;gap:6px;border-radius:13px}
+  .kpi span{font-size:13px}
+  .kpi strong{font-size:26px}
+  .kpi small{font-size:12px}
+  .funnel-item{font-size:13px}
+  .funnel-label{width:88px}
+
+  /* Álbum, mantenimiento y cotización */
+  .album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .album-details strong{font-size:14px}
+  .album-details p{font-size:12.5px}
+  .album-details button,.maintenance-actions button,.contact-action{font-size:14px;min-height:42px}
+  .album-filter{display:grid;justify-content:stretch;font-size:14px}
+  .album-filter select{width:100%}
+  #quote-preview-content{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* Acceso */
+  .login-layout{padding:16px;align-items:start;padding-top:calc(28px + env(safe-area-inset-top))}
+  .login-card{padding:24px;border-radius:20px}
+  .login-card h1{font-size:25px;margin-top:24px}
+}
+@media print{.sidebar,.topbar,.mobile-only{display:none!important}}
