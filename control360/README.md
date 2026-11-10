@@ -20,6 +20,14 @@ La solución está **en fase de validación operativa**: hay datos comerciales y
 - Álbum técnico exclusivo por cliente/equipo y ficha de visita con acceso restringido y autorización de marketing diferenciada.
 - Posventa: fecha de revisión según fecha real del equipo o último mantenimiento no anulado.
 
+## Instalación en celulares (09/11/2026)
+- El panel es instalable como app (PWA): `manifest.webmanifest`, íconos en `icons/`, `sw.js` y `pwa.js`.
+- Android (Chrome, Edge, Samsung Internet): botón «Instalar app» con el aviso nativo del sistema; si no está disponible, se muestran los pasos del menú ⋮.
+- iPhone/iPad: Apple no permite botón de instalación; el botón muestra los pasos de Safari → Compartir → «Agregar a inicio».
+- El service worker solo guarda archivos propios del panel (red primero), **nunca** datos de Supabase, y solo borra cachés con prefijo `y360-control360-` para no afectar a otras apps del mismo dominio.
+- La sesión sigue en `sessionStorage`: al cerrar la app se vuelve a pedir el inicio de sesión.
+- Prueba automática: `node control360/qa-pwa.mjs`.
+
 ## Correcciones de la auditoría 08/11/2026
 - Prevención de fuga entre sesiones: reinicio de datos, roles y formularios; protección ante solicitudes asíncronas de otra sesión.
 - Lectura paginada en lotes; umbral operativo de 10 000 registros con aviso explícito. **Pendiente:** consulta/filtrado y conteos agregados por servidor para alta escala.
